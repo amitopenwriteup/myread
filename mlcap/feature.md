@@ -1,75 +1,207 @@
-This code is doing **feature engineering** and then checking whether the newly created features differ between failure types.
+Yes. If this is for **`features.md`**, I would explain it as a learner-oriented document: **what is the objective, why are we creating these features, what should the learner think about, and what should they eventually code?** Not just explain each Python line.
 
-### 1. Create a feature-engineering function
+# Feature Engineering — Learner Explanation
 
-```python
-def engineer_features(df):
-    df = df.copy()
-```
+## Objective
 
-The function takes a DataFrame and makes a copy so the original DataFrame isn't directly modified.
+The objective of this step is:
+
+> **Create new features from the existing machine measurements that may provide more useful information to the ML model.**
+
+We already have raw measurements such as:
+
+* Air temperature
+* Process temperature
+* Rotational speed
+* Torque
+* Tool wear
+
+Instead of using only these raw measurements, we can combine related measurements to create features with **physical meaning**.
+
+The two new features we want to create are:
+
+1. **Power_W**
+2. **Temp_diff**
 
 ---
 
-### 2. Calculate mechanical power
+# Step 1: Understand what feature engineering means
 
-```python
-df['Power_W'] = df['Torque'] * df['Rotational speed'] * 2 * np.pi / 60
-```
+**Feature engineering** means:
 
-This creates a new column called **`Power_W`**.
+> Taking existing information and creating new variables that may help the machine-learning model understand the problem better.
 
-The formula is:
-
-$$
-Power = Torque \times Angular\ Velocity
-$$
-
-Because rotational speed is usually given in **RPM**, the code converts RPM to radians/second:
-
-$$
-Angular\ Velocity = \frac{RPM \times 2\pi}{60}
-$$
-
-So:
-
-```text
-Torque
-   +
-Rotational speed
-   ↓
-Power_W
-```
-
-The result is approximately **mechanical power in watts**.
-
-For example, if:
+For example, suppose we have:
 
 ```text
 Torque = 50 Nm
 Rotational speed = 1500 RPM
 ```
 
-then:
+Instead of giving the model only these two separate measurements, we can calculate the machine's approximate **mechanical power**.
+
+So:
 
 ```text
-Power_W ≈ 7854 W
+Torque + Rotational Speed
+          ↓
+       Power_W
 ```
 
-This can be a useful ML feature because high mechanical power may be associated with certain operating conditions or failures.
+Similarly:
+
+```text
+Process Temperature - Air Temperature
+          ↓
+       Temp_diff
+```
+
+These new features may capture relationships that are not obvious when looking at individual columns.
 
 ---
 
-### 3. Calculate temperature difference
+# Step 2: Create the `Power_W` feature
 
-```python
-df['Temp_diff'] = df['Process temperature'] - df['Air temperature']
-```
+We want to calculate mechanical power.
 
-Creates another feature:
+The basic relationship is:
+
+**Power = Torque × Angular Velocity**
+
+But our rotational speed is given in **RPM**, while the power equation requires angular velocity in radians per second.
+
+So we first convert RPM:
+
+**Angular velocity = RPM × 2π / 60**
+
+Then:
+
+**Power = Torque × RPM × 2π / 60**
+
+Therefore, the learner needs to:
+
+1. Take the `Torque` measurement.
+2. Take the `Rotational speed`.
+3. Convert rotational speed from RPM to radians/second.
+4. Multiply it by Torque.
+5. Store the result as a new feature called **`Power_W`**.
+
+The conceptual flow is:
 
 ```text
-Temp_diff = Process temperature − Air temperature
+Rotational speed (RPM)
+          ↓
+Convert to rad/s
+          ↓
+       Angular velocity
+          +
+        Torque
+          ↓
+      Mechanical Power
+          ↓
+        Power_W
+```
+
+---
+
+# Step 3: Understand the unit
+
+Torque is measured approximately in:
+
+**Newton-metres (Nm)**
+
+Angular velocity is:
+
+**radians/second**
+
+Therefore:
+
+**Nm × rad/s ≈ Watts**
+
+So the new feature is called:
+
+**`Power_W`**
+
+where `W` means **Watts**.
+
+For example:
+
+```text
+Torque = 50 Nm
+Speed = 1500 RPM
+```
+
+gives approximately:
+
+```text
+Power ≈ 7,854 W
+```
+
+The exact value depends on the actual measurements.
+
+---
+
+# Step 4: Why could Power be useful?
+
+Imagine two machines:
+
+```text
+Machine A
+Torque = 30
+Speed = 1000
+
+Machine B
+Torque = 60
+Speed = 2000
+```
+
+Looking at only one measurement at a time doesn't fully describe the machine's mechanical operating condition.
+
+Power combines:
+
+```text
+Torque
+   +
+Rotational speed
+   ↓
+Mechanical power
+```
+
+A failure may be associated with a particular operating load or power level.
+
+Therefore, **Power_W could provide the ML model with an additional useful signal**.
+
+Important:
+
+> We are not saying Power_W definitely causes failure. We are creating a physically meaningful feature that the model can test for predictive usefulness.
+
+---
+
+# Step 5: Create `Temp_diff`
+
+The second feature is much simpler.
+
+We want to know:
+
+> **How much hotter is the process compared with the surrounding air?**
+
+We already have:
+
+* Air temperature
+* Process temperature
+
+So calculate:
+
+**Temperature difference = Process temperature − Air temperature**
+
+The conceptual flow is:
+
+```text
+Process Temperature
+        -
+Air Temperature
+        ↓
+     Temp_diff
 ```
 
 For example:
@@ -78,172 +210,307 @@ For example:
 Process temperature = 320 K
 Air temperature     = 300 K
 
-Temp_diff = 20 K
+Temperature difference = 20 K
 ```
 
-This tells the model how much hotter the machine's process temperature is compared with the surrounding air.
+So:
+
+```text
+Temp_diff = 20
+```
 
 ---
 
-### 4. Return the modified DataFrame
+# Step 6: Why is `Temp_diff` useful?
 
-```python
-return df
-```
+Looking at process temperature alone doesn't tell us the complete thermal condition.
 
-The function returns the DataFrame with the two new features:
+For example:
+
+### Machine A
 
 ```text
-Original columns
-       +
+Air = 300 K
+Process = 320 K
+
+Difference = 20 K
+```
+
+### Machine B
+
+```text
+Air = 280 K
+Process = 320 K
+
+Difference = 40 K
+```
+
+Both machines have the same process temperature:
+
+```text
+320 K
+```
+
+But Machine B has a much larger difference from its surroundings.
+
+That difference may provide useful information about the machine's thermal operating condition.
+
+Therefore we create:
+
+**`Temp_diff`**
+
+---
+
+# Step 7: Apply the same feature engineering everywhere
+
+Your project has multiple datasets:
+
+```text
+train
+current
+stress
+```
+
+We need the same features in all of them.
+
+Conceptually:
+
+```text
+                 Feature Engineering
+                         │
+          ┌──────────────┼──────────────┐
+          ↓              ↓              ↓
+        train         current         stress
+          ↓              ↓              ↓
+     Power_W         Power_W         Power_W
+     Temp_diff       Temp_diff       Temp_diff
+```
+
+This is important because the model might be trained using:
+
+```text
 Power_W
 Temp_diff
 ```
 
+Therefore, when we later give it `current` or `stress` data, those datasets must contain the **same features calculated in the same way**.
+
 ---
 
-### 5. Apply feature engineering to your datasets
+# Step 8: Don't duplicate the calculation
 
-```python
-train = engineer_features(train)
-current = engineer_features(current)
-stress = engineer_features(stress)
-```
+Instead of manually calculating the features separately for every dataset, we create one reusable feature-engineering procedure.
 
-This applies exactly the same feature calculations to three datasets:
+The learner's thought process should be:
+
+> "I have the same feature calculations that need to be applied to several DataFrames, so I should create one function and reuse it."
+
+Conceptually:
 
 ```text
-train
-  ↓
-Power_W + Temp_diff
-
-current
-  ↓
-Power_W + Temp_diff
-
-stress
-  ↓
-Power_W + Temp_diff
+Feature Engineering Function
+          │
+          ├── train
+          ├── current
+          └── stress
 ```
 
-This is important because your model should receive the **same engineered features** during training and prediction.
+This reduces duplication and makes the pipeline easier to maintain.
 
 ---
 
-### 6. Calculate average values for each failure type
+# Step 9: Make a copy before modifying
 
-```python
-summary = train.groupby('Failure_Type')[['Power_W', 'Temp_diff']].mean().round(2)
-```
+When creating the feature-engineering function, the learner should consider:
 
-This is the most important analysis part.
+> "Do I want to directly modify the original DataFrame?"
 
-It groups the training data by `Failure_Type` and calculates the **average Power_W and average Temp_diff for each failure class**.
+Usually, it's safer to create a copy first.
 
-For example, you might get:
+Conceptually:
 
 ```text
-Failure_Type    Power_W    Temp_diff
-0               5200.45       18.20
-1               7800.31       25.40
-2               6100.72       20.15
-3               9200.18       31.50
+Original DataFrame
+       ↓
+     COPY
+       ↓
+Add new features
+       ↓
+Return modified DataFrame
 ```
 
-This lets you see whether different failure types operate under different power or temperature conditions.
+This prevents unexpected changes to the original object.
 
 ---
 
-### 7. Replace class numbers with names
+# Step 10: Analyze whether the new features are useful
 
-```python
-summary.index = [CLASS_NAMES[i] for i in summary.index]
+Creating a feature doesn't automatically mean it's useful.
+
+We need to investigate:
+
+> **Do Power_W and Temp_diff actually differ between failure types?**
+
+That's why the next part groups the data by `Failure_Type`.
+
+Conceptually:
+
+```text
+Training Data
+      ↓
+Group by Failure Type
+      ↓
+Calculate average Power_W
+      ↓
+Calculate average Temp_diff
+      ↓
+Compare failure classes
 ```
 
-Instead of displaying:
+---
+
+# Step 11: Group by `Failure_Type`
+
+Suppose the dataset contains:
+
+```text
+Failure_Type
+     0
+     1
+     2
+     3
+     4
+```
+
+We group all records belonging to the same failure type.
+
+For each group, calculate:
+
+* Average `Power_W`
+* Average `Temp_diff`
+
+For example:
+
+| Failure Type | Average Power | Average Temp Difference |
+| ------------ | ------------: | ----------------------: |
+| No Failure   |       5,200 W |                  18.2 K |
+| TWF          |       7,800 W |                  25.4 K |
+| HDF          |       6,100 W |                  20.2 K |
+| PWF          |       9,200 W |                  31.5 K |
+
+These numbers are just an example—the actual values come from your dataset.
+
+---
+
+# Step 12: What are we looking for?
+
+We're looking for patterns.
+
+For example, suppose we find:
+
+```text
+PWF → very high average Power_W
+HDF → medium Power_W
+TWF → high Temp_diff
+No Failure → lower Temp_diff
+```
+
+That suggests these engineered features **may contain useful information** for distinguishing failure types.
+
+But remember:
+
+> A difference in averages does not prove that the feature is predictive.
+
+The ML model will ultimately determine how useful the features are.
+
+---
+
+# Step 13: Convert class numbers into names
+
+The dataset may store failure types as numbers:
 
 ```text
 0
 1
 2
 3
+4
 ```
 
-it changes them to meaningful names:
+But numbers aren't easy for humans to interpret.
+
+We already have a mapping such as:
 
 ```text
-No Failure
-TWF
-HDF
-PWF
+0 → No Failure
+1 → TWF
+2 → HDF
+3 → PWF
+4 → OSF
 ```
 
-assuming those are the names in your `CLASS_NAMES` dictionary.
+So the summary should display the **failure names instead of numbers**.
+
+This makes the output easier to understand and present in a report.
 
 ---
 
-### 8. Print the result
+# Step 14: The complete reasoning
 
-```python
-print(summary)
-```
+Before writing the code, the learner should be able to describe the task like this:
 
-Finally, it displays something like:
+> **I want to create two new features from existing machine measurements. First, I will calculate mechanical power using Torque and Rotational Speed. Second, I will calculate the difference between Process Temperature and Air Temperature. I will apply these same calculations to all datasets that will later be used by the model. Then I will group the training data by Failure Type and calculate the average of the new features to investigate whether different failure types have different operating characteristics.**
 
-```text
-             Power_W  Temp_diff
-No Failure    5200.45      18.20
-TWF           7800.31      25.40
-HDF           6100.72      20.15
-PWF           9200.18      31.50
-OSF           6800.55      22.70
-RNF           4900.21      16.80
-```
+---
 
-## In simple terms
-
-Your code does **two things**:
-
-**Feature engineering:**
+# Expected workflow
 
 ```text
-Torque + Rotational Speed
-          ↓
-       Power_W
-
-Process Temperature - Air Temperature
-          ↓
-       Temp_diff
+                 RAW MACHINE DATA
+                         │
+                         ↓
+                Existing Features
+                         │
+             ┌───────────┴───────────┐
+             ↓                       ↓
+    Torque + Rotational       Process Temp -
+        Speed                 Air Temperature
+             ↓                       ↓
+        Power_W                   Temp_diff
+             │                       │
+             └───────────┬───────────┘
+                         ↓
+                 Enhanced Dataset
+                         │
+                         ↓
+                 Group by Failure
+                         │
+                         ↓
+                Calculate Averages
+                         │
+                         ↓
+               Compare Failure Types
+                         │
+                         ↓
+              Decide whether features
+              may help the ML model
 ```
 
-**EDA/analysis:**
+## What the learner should be able to code afterward
 
-```text
-Power_W + Temp_diff
-          ↓
-Group by Failure Type
-          ↓
-Calculate average
-          ↓
-Compare failure classes
-```
+The learner should now know that they need to:
 
-### Why this is useful for your ML project
+1. Create a reusable feature-engineering function.
+2. Make a copy of the input DataFrame.
+3. Calculate `Power_W` from Torque and Rotational Speed.
+4. Calculate `Temp_diff` from Process and Air Temperature.
+5. Return the modified DataFrame.
+6. Apply the function to `train`, `current`, and `stress`.
+7. Group the training data by `Failure_Type`.
+8. Calculate the mean `Power_W` and `Temp_diff` for each failure class.
+9. Convert failure IDs into human-readable names.
+10. Display the summary.
 
-Instead of giving the model only raw measurements such as:
+The key learning principle is:
 
-```text
-Torque
-Rotational speed
-Process temperature
-Air temperature
-```
-
-you create features that have more physical meaning:
-
-```text
-Power_W
-Temp_diff
-```
-
-These engineered features can potentially make it easier for the ML model to distinguish between different machine failure types.
+> **Don't memorize the formula or Python syntax first. Understand what information you have, what new information could be useful, and how you can derive it. Then translate that reasoning into code.**
