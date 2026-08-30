@@ -9,6 +9,75 @@ This guide is for the *trainer*, not the learner. For every code block in the re
 
 The general rhythm for *every* code block: **predict → reveal → interrogate → connect**. Don't just read code top to bottom. Cover the output, ask learners to predict it, then reveal and ask them to explain the gap between guess and reality.
 
+Every section below now includes a **"Ground it in the actual CSV"** block — a concrete, relatable example built from the real columns and numbers the notebook produces (`Air temperature`, `Process temperature`, `Rotational speed`, `Torque`, `Tool wear`, `Power_W`, `Temp_diff`, and the failure classes `TWF`/`HDF`/`PWF`/`OSF`/`No Failure`), so the abstract metric or concept always lands on something a learner can picture on a factory floor. Where a specific row is used to illustrate a pattern (e.g. "Torque = 65 Nm, Tool wear = 210 min"), it's a representative example in the style of the dataset, not a literal printed row — tell learners to swap in the real values from their own `.head()` / `.describe()` output if they want the exact numbers for their run.
+
+---
+
+## Whiteboard Data Sheets (draw these live, don't project them)
+
+These four tables are deliberately simple to hand-draw — rows/columns only, no code. The interactive trick: **draw the empty grid first, ask learners to fill in a guess with a show of hands or sticky notes, then reveal the real number next to it.** The gap between guess and reality is what makes it stick, not the table itself.
+
+### Sheet 1 — Model comparison (draw before Section 2 code)
+Draw 4 rows, 3 columns. Fill in Macro F1 as you run the code; the other two columns are worth predicting first.
+
+| Model | Macro F1 | Accuracy | What it's good/bad at |
+|---|---|---|---|
+| Logistic Regression | 0.531 | >98%* | Linear boundary — struggles with non-linear failure thresholds |
+| LightGBM | 0.730 | >98%* | Strong, slightly behind RF/XGBoost here |
+| Random Forest | 0.736 | >98%* | Close second |
+| **XGBoost** | **0.748** | >98%* | **Winner** — best at capturing non-linear interactions |
+
+*All four land above 98% accuracy — pull the exact figure from your own run's printout and write it in live. The point of drawing accuracy *next to* Macro F1 on the same board is visual: the accuracy column will look almost flat across all four rows while the Macro F1 column clearly separates them. That flat-vs-separated contrast is the whole lesson on why accuracy is the wrong metric here.
+
+**Interactive move:** cover the Macro F1 column with your hand/a sticky note before running the code. Ask learners to rank the 4 models 1st–4th by eye, based only on the model names and what they know about linear vs. tree-based methods. Reveal and compare rankings.
+
+### Sheet 2 — Per-class F1 for the winning model (draw after Sheet 1, during/after Optuna)
+Draw 5 rows (one per class). Leave every cell blank except TWF — fill the rest in live from your own notebook's `per_class` output as it prints.
+
+| Failure class | # real training examples | F1 score | Live prediction from the room |
+|---|---|---|---|
+| No Failure | thousands | (fill live — expect very high) | — |
+| TWF | ~30 | **0.0** | ask: "why zero, not just low?" |
+| HDF | moderate | (fill live) | ask for a guess before revealing |
+| PWF | moderate | (fill live) | ask for a guess before revealing |
+| OSF | small | (fill live) | ask for a guess before revealing |
+
+**Interactive move:** before revealing TWF's row, ask the room to guess the F1 score for a class with ~30 examples split across train/validation. Most will guess "low." When 0.0 appears, ask *why exactly zero, not just a weak number like 0.15* — this is where you introduce the idea that validation may contain zero or near-zero TWF examples to even score against.
+
+### Sheet 3 — Drift comparison, `current.csv` vs `stress.csv` (draw during Section 4)
+Draw two mini-tables side by side. Fill in `current.csv` first (all "No"), then have learners predict direction (↑/↓) for `stress.csv` before you reveal the real deltas.
+
+**`current.csv` (stable batch)**
+| Feature | Drift flag |
+|---|---|
+| Air temperature | No |
+| Process temperature | No |
+| Rotational speed | No |
+| Torque | No |
+| Tool wear | No |
+| **Dataset drift overall** | **No** |
+
+**`stress.csv` (heavy-load batch)**
+| Feature | Drift flag | Wasserstein score | Delta vs training |
+|---|---|---|---|
+| Tool wear | **Yes** | 0.645 | **+41 min** |
+| Torque | **Yes** | 0.474 | **+4.7 Nm** |
+| Rotational speed | **Yes** | 0.235 | **−42 rpm** |
+
+**Interactive move:** before revealing the stress table, draw three empty arrows (↑ / ↓ / — ) next to Tool wear, Torque, and Rotational speed and ask the room to vote on direction only (not magnitude) for a machine under heavier load. Reveal the real deltas after the vote — the direction is intuitive (harder-working machine = more torque, less speed, longer between servicing), so this should land as a quick win before the harder drift-vs-validity discussion.
+
+### Sheet 4 — SHAP top-driver flags per failure class (draw during Section 5)
+Draw 4 rows, one per failure class, and reveal one at a time as you walk the four-panel chart.
+
+| Failure class | Top SHAP driver | One-line "why" |
+|---|---|---|
+| TWF | Tool Wear | Directly what the class is named for |
+| HDF | Temp_diff (not raw temp) | Narrow gap = poor cooling headroom |
+| PWF | Torque (not the engineered Power_W) | Engineered feature didn't beat the raw signal here |
+| OSF | Torque & Tool Wear jointly | Two features compounding, not one |
+
+**Interactive move:** cover the "Top SHAP driver" column. For each class, ask the room to nominate one feature out of the 8 in `FEATURES` before you reveal the chart's actual top bar. PWF is the one most likely to trip people up — most rooms guess `Power_W` since it was purpose-built for this — which sets up the "trust the data over your own feature-engineering instincts" discussion.
+
 ---
 
 ## Section 2 — Model Comparison Code
@@ -32,6 +101,42 @@ Learner should articulate that accuracy is dominated by the majority class (`No 
 
 ### Misconception to pre-empt
 Learners often think "weighted F1" is the "fair" one because it sounds more sophisticated. Clarify: weighted F1 still lets large classes dominate the score — it just reweights by class frequency instead of ignoring it. **Macro is the only one that gives rare failure classes equal say.**
+
+### Ground it in the actual CSV
+Make it concrete with the class counts, not abstract percentages:
+> "Picture `train.csv` as a room of ~10,000 machine-readings. About 9,700 of those rows say `No Failure`. Maybe 100 say `OSF`, and only around 30 say `TWF`. A model that just always shouts 'No Failure!' for every single row — never even looking at Torque, Tool wear, or Temp diff — is *right* 9,700 times out of 10,000. That's your 98% accuracy. It never once caught a real failure, and it would still 'pass' if accuracy were the only score you looked at."
+
+Then connect it to money the learners already saw in Section 6/8: *"Each of those missed failures is a machine that could go down unplanned — and the notebook already told us that costs ₹8–15 lakh per hour of downtime. Accuracy can't see that cost. Macro F1 can, because it forces every class — including the 30-row TWF class — to be scored on its own terms."*
+
+### Deep dive — what Macro F1 actually represents
+Keep this in your back pocket for whenever a learner asks "but what *is* Macro F1, really?" Build it in three layers, live on the whiteboard:
+
+**Layer 1 — Precision and Recall, for one class at a time.** Take TWF as the example:
+- *Precision*: "Of all the times the model predicted TWF, how often was it actually TWF?"
+- *Recall*: "Of all the real TWF cases, how many did the model actually catch?"
+
+**Layer 2 — F1, per class.** F1 combines precision and recall into one number (their harmonic mean), which punishes a big gap between the two harder than a plain average would. A model with precision=1.0 but recall=0.0 still scores F1=0 — not 0.5 — which stops the score from being gamed by only guessing a class when it's "safe" to.
+
+**Layer 3 — Macro = average those per-class F1 scores, with no weighting by class size.**
+```
+Macro F1 = (F1_NoFailure + F1_TWF + F1_HDF + F1_PWF + F1_OSF) / 5
+```
+No Failure might have thousands of rows and TWF might have ~30 — in this average, they count *equally*, one-fifth each.
+
+**Why this specific dataset needs it:** accuracy lets the ~9,700 No Failure rows drown out the ~30 TWF rows completely. Weighted F1 still lets the big class dominate, just less bluntly. Macro F1 refuses to let class size matter at all — if the model completely misses TWF (F1=0.0), that zero drags the whole average down hard, even though TWF is a tiny sliver of the data. That's exactly why XGBoost's 0.748 macro F1 is meaningful even while every model scores >98% accuracy: it's the only one of the three metrics being honest about rare-failure performance, which is the entire point of a predictive maintenance model.
+
+### Deep dive — why XGBoost specifically wins here
+This is the natural follow-up once macro F1 clicks: *"okay, but why does XGBoost beat Random Forest and LightGBM, not just Logistic Regression?"* Three reasons, roughly in order of how much they matter for this dataset:
+
+1. **Boosting corrects its own mistakes; Random Forest doesn't.** Random Forest builds many trees independently and averages them — each tree never sees where the *others* went wrong. XGBoost builds trees sequentially, and each new tree is trained specifically to fix the errors the previous trees made. On a dataset where the hardest cases are the rare failure classes (PWF, OSF), that "focus on what's still wrong" behavior matters more than it would on a balanced dataset — XGBoost keeps getting nudged toward the few examples it's still misclassifying, which are disproportionately the rare classes.
+
+2. **Built-in regularization keeps it from overfitting the SMOTE-synthetic minority examples.** `reg_alpha` and `reg_lambda` — the two hyperparameters Optuna tunes in Section 3a — penalize overly complex trees directly inside XGBoost's loss function. Since a chunk of the rare-class training rows are now SMOTE-synthetic (invented by blending real points), a model that overfits too eagerly risks fitting the *artifacts* of that blending rather than the real underlying pattern. This explicit regularization is part of why XGBoost tends to generalize slightly better here.
+
+3. **It's the most tunable of the three tree methods for this exact problem.** Notice the Optuna search only tunes XGBoost — not Random Forest, not LightGBM. That's not arbitrary: XGBoost exposes more fine-grained knobs (`gamma`, `min_child_weight`, `colsample_bytree`, plus the two regularization terms) that let you specifically trade off "learn the rare classes harder" against "don't overfit the synthetic minority points." That's why tuning takes it from 0.748 to 0.771 — there was more usable surface area to search.
+
+**Say this out loud so learners don't over-conclude:** the gap between XGBoost (0.748) and Random Forest (0.736) is small — 0.012. All three tree-based methods are capturing the same fundamental thing: non-linear interactions between Torque, Tool wear, and temperature that Logistic Regression's straight decision boundary can't. XGBoost's edge here is incremental, not a different category of model. The real headline of this section is *tree-based beats linear*; XGBoost is simply the strongest tree-based option once you also factor in its tunability advantage from Section 3.
+
+**Prompt to pose for this deep dive:** *"Random Forest and XGBoost land within 0.012 macro F1 of each other. So why does the notebook bother tuning XGBoost specifically, instead of just going with whichever won the baseline comparison?"* — Good answer: the choice isn't only about which wins untuned, it's about which has more room to *improve* with tuning — XGBoost's boosting mechanics and regularization knobs give Optuna more useful levers to pull.
 
 ---
 
@@ -57,6 +162,12 @@ Optuna calls `objective(trial)` repeatedly, each time trying a new combination o
 ### Misconception to pre-empt
 Learners often think Optuna is testing on the training set the same way `.fit()` does, and conflate "best trial score" with "training accuracy." Be explicit: the objective function's score comes from `X_val`, which is *held out* — that's the whole point.
 
+### Ground it in the actual CSV
+Use the actual before/after numbers instead of talking about tuning in the abstract:
+> "Before Optuna touches anything, plain XGBoost on our data already gets macro F1 ≈ 0.748. After 30 trials of dial-turning — `max_depth`, `learning_rate`, `subsample`, and six others — we land at ≈ 0.771. That's a +0.023 jump. It sounds tiny, but remember what macro F1 is made of: it's the *average* of five per-class scores, one of which (TWF) is stuck at 0.0 no matter what we do. So that +0.023 gain is coming almost entirely from getting a bit sharper on HDF, PWF, and OSF — the failure types where we *do* have enough real examples (like Tool wear, Torque, and Air temperature readings) to actually learn from."
+
+For the "why 30 trials is enough" question, tie it to something learners can picture from the CSV itself: *"Think of it like adjusting Torque and Rotational speed dials on a real machine to hit a target Power output. You wouldn't try every possible combination of both dials from scratch — after a few tries you'd notice 'higher torque + this speed range gives me the output I want' and start concentrating your remaining tries there. That's exactly what TPE does with the 9 hyperparameter dials instead of physical ones."*
+
 ---
 
 ## Section 3b — MLflow Registration & Production Alias
@@ -78,6 +189,10 @@ Learner should recognize `production` as a *pointer* that can be reassigned to a
 
 ### Misconception to pre-empt
 Learners sometimes think the alias *is* the version — clarify it's a separate, movable label on top of an immutable, auto-incrementing version number. The version never changes; only what the alias points to changes.
+
+### Ground it in the actual CSV
+Tie the version history directly to the models learners already trained in this same session:
+> "By this point in the notebook you've personally trained at least six models on this data: the four in Section 2 (Logistic Regression, Random Forest, XGBoost, LightGBM) plus the Optuna-tuned XGBoost in Section 3. If we'd registered every one of them, `PredMaint_XGBoost` might be sitting at version 3 or 4 by now — one version per XGBoost run we logged. The `production` alias is just today's sticky note saying 'use version 4, the Optuna-tuned one, for anything scoring live sensor readings.' If next month someone finds 30 more real TWF examples and retrains, that becomes version 5 — and one line of code moves the sticky note from 4 to 5. Nobody has to touch the code that reads live Torque and Tool wear values and calls the model."*
 
 ---
 
@@ -103,6 +218,17 @@ Under heavier load: torque up, rotational speed down, tool wear up (longer stret
 ### Misconception to pre-empt
 Learners often assume "passed validation" means "safe to trust the model's predictions on this data." Make the distinction explicit and blunt: **valid ≠ familiar to the model.**
 
+### Ground it in the actual CSV
+This is the easiest section to make tangible because the actual deltas are physically intuitive — use them directly instead of talking about "drift" abstractly:
+> "Here's exactly what changed between `train.csv` and `stress.csv`, column by column:
+> - **Tool wear**: up by about +41 minutes on average. Picture the same drill bit or cutting tool just staying in service 41 minutes longer before anyone swaps it out.
+> - **Torque**: up by about +4.7 Nm. That's the machine straining harder against the material it's cutting or shaping.
+> - **Rotational speed**: down by about −42 rpm. The machine is running measurably slower under that extra strain.
+>
+> None of those three numbers, on their own, is an 'invalid' reading — a single machine clocking 41 extra minutes of tool wear or turning 42 rpm slower isn't a nulls-and-out-of-range problem, so Pandera in Session 1 would wave every one of these rows through. But *as a pattern across a whole batch*, it tells a very physical story: these machines are being pushed harder and serviced less often than the machine ever saw during training. That's the 'heavy load' scenario the notebook is literally named `stress.csv` for."
+
+Then close the loop with the Wasserstein scores already in the readout: *"Tool wear scores the highest drift (0.645), Torque next (0.474), Rotational speed lowest of the three (0.235) — so if you only have budget to re-check one sensor stream first, Tool wear is where the shift is most pronounced."*
+
 ---
 
 ## Section 5 — SHAP Explainability
@@ -127,16 +253,34 @@ This is the section where learners most often try to shortcut to "just tell me t
 ### Misconception to pre-empt
 Learners frequently want a single "most important feature" answer for the whole model. Explicitly forbid that framing here: **there is no single global ranking in a multi-class SHAP analysis worth trusting — only per-class rankings.**
 
+### Ground it in the actual CSV
+Walk one imagined-but-realistic row from `train.csv` to make the four-panel chart click:
+> "Say a row shows Torque = 65 Nm (high for this dataset), Tool wear = 210 minutes (also high), and Air temperature and Process temperature both close to normal. Which failure would you bet on? Most learners guess right here: that combination screams OSF (Overstrain Failure) — high torque *and* high tool wear together — which matches exactly what the readout says: 'OSF: Torque & Tool Wear jointly.' Now change just one thing: same high Torque, but Tool wear near 0 minutes, like a freshly serviced machine. Suddenly it looks more like PWF (Power Failure) territory, because Torque is now acting alone rather than compounding with wear — which is why Torque alone tops the PWF panel."
+
+For the two "insight" callouts, make them personal:
+> "You engineered `Power_W` yourselves in Session 1, specifically betting it would explain PWF better than raw Torque. SHAP checked your bet against the real data and raw Torque still wins. That's not a bug in the code — that's SHAP doing its job: telling you the truth even when it contradicts the feature you were proud of building."
+>
+> "And for HDF, the surprise cuts the other way: it's not Air temperature or Process temperature alone that matters most — it's `Temp_diff`, the *gap* between them. Think of two machines both running at a toasty 310K process temperature: one has plenty of cooler air temperature nearby to dissipate heat into, the other doesn't. Same raw temperature, very different heat-dissipation risk — and only `Temp_diff` captures that."
+
 ---
 
 ## Quick-Reference: One-Line Prompt Per Section (for a fast-paced cohort)
 
-If you're short on time, use just these five prompts as checkpoints — one per code section:
+If you're short on time, use just these five prompts as checkpoints — one per code section. Each one has a model answer below it — use it to judge whether the room actually got it, not as a script to read aloud before they've tried.
 
-1. **Model comparison:** "Why can a model score 98% accuracy and still be useless?"
-2. **Optuna:** "What is `objective(trial)` actually measuring, and on which dataset?"
-3. **MLflow registry:** "How does an alias let you change the production model without touching deployment code?"
-4. **Evidently:** "How can a batch pass every row-level validation check and still show drift?"
-5. **SHAP:** "Why is there no single 'most important feature' for this model?"
+**1. Model comparison: *"Why can a model score 98% accuracy and still be useless?"***
+> Because accuracy just counts "how many rows did I get right," and in `train.csv` roughly 9,700 out of every 10,000 rows are `No Failure`. A model that predicts `No Failure` for *every single row* — never looking at Torque, Tool wear, or Temp diff — is right 9,700/10,000 times and scores >98% accuracy, while catching zero real failures. It would be useless in production because every missed failure risks ₹8–15 lakh/hour of downtime, and accuracy can't see that cost at all. Macro F1 can, because it scores each class — including the ~30-row TWF class — on its own terms and averages them equally.
+
+**2. Optuna: *"What is `objective(trial)` actually measuring, and on which dataset?"***
+> On each trial, `objective(trial)` picks one combination of the 9 hyperparameters (`n_estimators`, `max_depth`, `learning_rate`, etc.), trains a fresh XGBoost model on the SMOTE-resampled training data (`X_res`/`y_res`), and then scores that model's predictions against the **held-out validation set** (`X_val`/`y_val`) using macro F1 — the same metric from Section 2, not accuracy. It's measuring "how good is this specific set of dials at correctly predicting all five classes on data the model didn't train on," and Optuna's TPE sampler uses the score from each trial to choose smarter combinations for the next one, which is how 30 trials beat blind grid search across a 9-dimensional space.
+
+**3. MLflow registry: *"How does an alias let you change the production model without touching deployment code?"***
+> Because the deployment code never references a hardcoded version number — it asks MLflow for "whichever version currently has the `production` alias." The alias is just a movable pointer sitting on top of an immutable, auto-incrementing version history (v1, v2, v3...). When `client.set_registered_model_alias('PredMaint_XGBoost', 'production', latest_v.version)` runs, it just re-points that label to a new version — say, moving it from v3 (baseline XGBoost) to v4 (the Optuna-tuned model). The deployment script's code is unchanged; it still asks for "production" and now transparently gets v4 instead of v3. Rolling back a bad promotion is just moving the same pointer back — no redeploy, no code change.
+
+**4. Evidently: *"How can a batch pass every row-level validation check and still show drift?"***
+> Because Pandera and Evidently check two completely different things. Pandera (Session 1) checks *each row in isolation*: is this one Torque reading, this one Tool wear value, within a plausible range and non-null? Every row in `stress.csv` passes that test — nothing is technically broken. Evidently instead checks the *shape of a whole batch* against the training distribution using something like Wasserstein distance. `stress.csv` shifts as a batch — Tool wear up ~41 min, Torque up ~4.7 Nm, Rotational speed down ~42 rpm — even though each individual value could plausibly have appeared in `train.csv` too. Valid values, arranged in an unfamiliar overall pattern, is exactly what "drift" means: valid ≠ familiar to the model.
+
+**5. SHAP: *"Why is there no single 'most important feature' for this model?"***
+> Because this is a 5-class problem (`No Failure`, `TWF`, `HDF`, `PWF`, `OSF`), and `shap_vals` is shaped `(n_samples, n_features, n_classes)` — SHAP computes a separate contribution score for each feature *per class*, not one global score. A feature can dominate one failure type and barely matter for another: `Torque` and `Tool wear` jointly drive `OSF`, `Torque` alone drives `PWF`, but `Temp_diff` (not raw temperature) drives `HDF`. Collapsing that into a single global ranking would hide those class-specific stories — for example, it would blur the fact that the engineered `Power_W` feature actually loses to raw `Torque` for explaining `PWF`, which is exactly the kind of insight per-class SHAP catches and a single ranking would erase.
 
 If a learner can answer all five unprompted by the end of the session, they've understood the pipeline — not just run the code.
