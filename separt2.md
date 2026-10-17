@@ -1,9 +1,13 @@
-# Trainer Script · Part II: Standard Methods for Evaluating Search Systems
+# Trainer Script · Part II: Standard Methods for Evaluating Search Systems (with Newbie Examples)
 
 **Slides 12–24 · T+0:30 – T+1:30 · 60 min**
 Relevance metrics (P, R, F1, MAP): 20 min · Manual / task-oriented evaluation: 10 min · Generation metrics (BLEU, ROUGE): 30 min
 
 > **How to use this:** Read the plain text aloud as it is. Lines marked **ASK** are questions for the participants. Pause and let them answer in chat or on mic. Lines marked *(pause)* are short waits. Where a calculation is shown, give people a few seconds to try it before you reveal the answer.
+>
+> **New in this version:** Each slide has a box called **🟢 Newbie example**. Use it right after the main explanation, or whenever the room goes quiet. Two pictures run through this part:
+> - **The Mango Market 🥭** for ranked-list metrics (slides 13–17). Same numbers as the running example: 10 mangoes in a row, 4 ripe ones exist, you found 3.
+> - **The Classroom 🏫** for text metrics (slides 20–24). Comparing a student's answer with the teacher's model answer.
 
 ---
 
@@ -16,6 +20,14 @@ We'll cover three things. First, relevance metrics: Precision, Recall, F1 and MA
 One thing that will make this easier. We use just **one running ranked list** and **one running sentence pair** throughout. You'll see both again in the lab, computed by code. So you don't need to keep learning new examples. You only need to learn these two well.
 
 **ASK:** Before we start, which metric names from today's agenda have you already used? Type them in chat. *(pause)*
+
+> 🟢 **Newbie example: "Metrics are just marks on a report card"**
+> Part I was about *building* search. Part II is about *giving it marks*, like a teacher grading a student.
+> - Marks for a **list of results** → Precision, Recall, F1, MAP (slides 13–17)
+> - Marks given by **humans** → manual and task-based (slides 18–19)
+> - Marks for a **written answer** → BLEU, ROUGE (slides 20–24)
+>
+> Don't worry about the names. Each one answers one plain question, and we'll use one example for each half.
 
 ---
 
@@ -30,6 +42,23 @@ There are also two **modes**. **Offline evaluation** uses a test collection: a f
 We start with offline, because it's repeatable and cheap. You can run it every time you change something.
 
 **ASK:** You've just changed the chunk size. Would you check that offline or online first? Why? *(pause. Answer: offline, because it's fast and repeatable. Online comes later for confirmation.)*
+
+> 🟢 **Newbie example: "A restaurant kitchen 🍽️"**
+>
+> | Layer | In the restaurant | What we check |
+> |---|---|---|
+> | **Retrieval** | The person who fetches ingredients | Did they bring the *right* ingredients? |
+> | **Generation** | The chef who cooks the dish | Is the dish cooked *correctly* from those ingredients? |
+> | **End to end** | The customer eating | Did the customer enjoy the meal? |
+>
+> Why separate them? If the dish is bad, you need to know: *wrong ingredients* (retrieval) or *bad cooking* (generation)?
+>
+> | Mode | In the restaurant |
+> |---|---|
+> | **Offline** | You test the recipe in the kitchen with a fixed set of test orders. Fast, repeatable, free. |
+> | **Online** | You serve real customers and watch their reactions. Real, but slow, noisy, and risky. |
+>
+> **Rule:** Taste-test in the kitchen first (offline). Then confirm with real customers (online).
 
 ---
 
@@ -51,6 +80,32 @@ Same list, two different views. Precision looks at what we showed. Recall looks 
 
 The top ten contains three relevant results. So precision at ten is 3 out of 10, which is 0.30. Recall at ten is 3 out of 4, which is 0.75. Notice what happened: recall went up, precision went down.
 
+> 🟢 **Newbie example: "Picking ripe mangoes 🥭"**
+>
+> A fruit seller lines up **10 mangoes** for you (rank 1 to 10). In the whole market there are **4 ripe mangoes**. The seller's row contains 3 of them (positions 1, 3, 6). The 4th ripe one is at a different stall and **never made it to the row**.
+>
+> ```
+> Rank:   1    2    3    4    5  |  6    7    8    9   10
+>         🥭   ·    🥭   ·    ·  |  🥭   ·    ·    ·    ·
+>       ripe     ripe              ripe          (🥭 = ripe, · = raw)
+>       |<------ you pick the first 5 ------>|
+> ```
+>
+> You only take the **first 5** mangoes home. 2 of them are ripe.
+>
+> | Question | Plain meaning | Calculation |
+> |---|---|---|
+> | **Precision@5** | "Of the 5 I took, how many are ripe?" | 2 ÷ 5 = **0.40** |
+> | **Recall@5** | "Of all 4 ripe mangoes in the market, how many did I get?" | 2 ÷ 4 = **0.50** |
+>
+> **Easy way to remember:**
+> - **Precision = how *clean* is my bag** (few raw ones inside).
+> - **Recall = how *complete* is my bag** (did I get all the ripe ones?).
+>
+> **ASK answer:** Take all 10 → 3 ripe → Precision 3/10 = 0.30, Recall 3/4 = 0.75. A bigger bag catches more ripe ones (recall ↑) but carries more raw ones (precision ↓).
+>
+> **Common mistake to warn about:** Recall is divided by *all ripe mangoes in the market (4)*, not by the 3 you happened to find.
+
 ---
 
 ## Slide 15 · F1 and the cut-off k (≈4 min)
@@ -65,6 +120,24 @@ And look at the line at the bottom: **report k with every score.** A score of 0.
 
 **ASK:** If a teammate says "our precision is 0.9", what is the first thing you'd ask them? *(pause. Answer: at what k, and on which dataset.)*
 
+> 🟢 **Newbie example: "The seller who shows only one mango"**
+>
+> | Seller | What they do | Precision | Recall |
+> |---|---|---|---|
+> | **Careful seller** | Shows just **1** mango, a perfectly ripe one | **1.00** (very clean) | **0.25** (found 1 of 4) |
+> | **Greedy seller** | Dumps **all 100** mangoes in your bag, including all 4 ripe ones | **0.04** (mostly raw) | **1.00** (got all) |
+> | **Balanced seller** | Shows 5 mangoes, 2 ripe | 0.40 | 0.50 |
+>
+> Neither extreme is useful. **F1 gives one mark that is low if *either* is low.**
+>
+> Example, extreme case: Precision = 1.0, Recall = 0.01
+> - Plain average = (1.0 + 0.01) ÷ 2 = **0.505**. Looks okay, but it is misleading!
+> - F1 = 2 × 1.0 × 0.01 ÷ 1.01 = **0.02**. Honest: this system is bad.
+>
+> **Running example:** F1@5 = 2 × 0.40 × 0.50 ÷ (0.40 + 0.50) = 0.40 ÷ 0.90 = **0.444**.
+>
+> **Why always say k?** "Precision 0.9" could mean "0.9 on a bag of 1 mango" (easy) or "0.9 on a bag of 20 mangoes" (hard). Without k, the number is meaningless.
+
 ---
 
 ## Slide 16 · Rank-aware metrics (≈4 min)
@@ -78,6 +151,37 @@ Second, **MRR, Mean Reciprocal Rank**. It's one divided by the rank of the *firs
 Third, **nDCG**. It's for **graded** relevance, where labels run from zero to three instead of just yes or no. It also discounts results lower in the list.
 
 **ASK:** Suppose the first relevant result sat at rank 4 instead of rank 1. What would the reciprocal rank be? *(pause. Answer: 1/4 = 0.25.)*
+
+> 🟢 **Newbie example: "Order matters: the mango queue"**
+>
+> You eat mangoes one by one from the row. **Finding a ripe one early feels better** than finding it late. Precision@5 can't see that, but AP can.
+>
+> **AP, step by step** (ripe at positions 1, 3, 6; 4 ripe exist in total):
+>
+> | Ripe mango found at… | Mangoes tasted so far | Ripe among them | Precision at that moment |
+> |---|---|---|---|
+> | Position 1 | 1 | 1 | 1/1 = 1.000 |
+> | Position 3 | 3 | 2 | 2/3 = 0.667 |
+> | Position 6 | 6 | 3 | 3/6 = 0.500 |
+> | The 4th ripe one | never found | — | counts as **0** |
+>
+> **AP** = (1.000 + 0.667 + 0.500 + 0) ÷ 4 = 2.167 ÷ 4 = **0.542**
+> The missing 4th mango pulls the score down. Early finds help, missed ones hurt.
+>
+> **MAP** = do the same for many queries and take the average.
+>
+> **MRR = "how fast did I get my first good one?"**
+>
+> | First ripe mango at rank | Reciprocal rank |
+> |---|---|
+> | 1 | 1/1 = **1.00** |
+> | 2 | 1/2 = **0.50** |
+> | 4 | 1/4 = **0.25** |
+> | 10 | 1/10 = **0.10** |
+>
+> Great when there is **one right answer** (like finding an ATM). You just care how soon you hit it.
+>
+> **nDCG = grades, not just yes/no.** Hotels: 5-star = grade 3, 3-star = grade 1, closed hotel = 0. nDCG says: *put the 5-star hotels at the top.* A 3-star at rank 1 and a 5-star at rank 8 scores worse than the other way round.
 
 ---
 
@@ -99,6 +203,18 @@ For RAG specifically, the top few chunks feed the LLM. So both the retriever's r
 
 **ASK:** Take a use case from your own work. Which metric from this table fits it best? Type the use case and the metric. *(pause, read out two or three)*
 
+> 🟢 **Newbie example: "Which mark for which job?"**
+>
+> | Everyday situation | What really matters | Metric |
+> |---|---|---|
+> | "Find the **nearest ATM**" | The first result must be right | **MRR / Precision@1** |
+> | "Find **every clause** in the contract that mentions penalties" (a missed one can cost money) | Don't miss anything | **Recall@k** |
+> | "Browse **10 shirt suggestions**" | Every shown shirt should be good | **Precision@k / MAP** |
+> | "Show **5-star hotels** before 3-star ones" | Best items first | **nDCG** |
+> | "One number to **compare two versions** while tuning" | A balanced summary | **F1@k / MAP** |
+>
+> **For RAG:** the LLM only reads the top few chunks, like an open-book exam where you can bring only 3 pages. So you need both: the right page *must be in the 3* (recall@3) and the 3 should not be full of junk (precision).
+
 ---
 
 ## Slide 18 · Manual evaluation (≈5 min)
@@ -113,6 +229,28 @@ For judging answers, a simple rubric works well. Rate each answer from one to fi
 
 **ASK:** Two raters give the same answer a 5 and a 2 for correctness. What do you do? *(pause. Answers: check the guidelines, discuss and resolve, add a third rater. Then mention the guidelines may be unclear.)*
 
+> 🟢 **Newbie example: "Two teachers marking the same answer"**
+>
+> **Question:** "What is the capital of Australia?" **Student answer:** "Canberra, which is Australia's capital and largest city."
+>
+> | Teacher | Correctness | Why |
+> |---|---|---|
+> | Teacher A | 5 | "Canberra is right." |
+> | Teacher B | 2 | "Canberra is the capital, but not the *largest* city (that's Sydney), so part is wrong." |
+>
+> Both are partly right! The disagreement shows the **rating guide was unclear** (does one wrong detail make the answer a 2 or a 4?). That's why you need **guidelines**, **two or more raters**, and a **measure of agreement**.
+>
+> **Cohen's kappa in one line:** "How much do the two teachers agree, *after removing agreement that could happen by pure luck*?" (If two people guess a coin toss, they'd agree 50% of the time. That doesn't count.) Low kappa → fix the guidelines before trusting any label.
+>
+> **The 4-point rubric, as a school report:**
+>
+> | Criterion | Plain question | 1 (bad) → 5 (good) |
+> |---|---|---|
+> | **Correctness** | Is it true? | Wrong facts → all facts right |
+> | **Groundedness** | Is it backed by the retrieved page? | Made up → every claim has evidence |
+> | **Completeness** | Does it cover the whole question? | Half answered → fully answered |
+> | **Clarity** | Is it easy to read? | Confusing → crisp |
+
 ---
 
 ## Slide 19 · Task-oriented evaluation (≈5 min)
@@ -126,6 +264,26 @@ Two standard tools. **Side-by-side**: raters see two systems' answers to the sam
 The trade-off: it's the most realistic signal, but it's costly, slow and subjective. So use a small, well-designed sample, give real users realistic tasks, and measure outcomes, not just relevance.
 
 **ASK:** Which would you choose for a small internal tool with only twenty users: side-by-side or A/B testing? Why? *(pause. Answer: side-by-side, because A/B needs traffic.)*
+
+> 🟢 **Newbie example: "Did you actually book the train ticket? 🚆"**
+>
+> A booking website shows very relevant search results, but you still **can't buy a ticket**. Relevance metrics say "great!". You say "useless!". Task-oriented evaluation measures *your* result:
+>
+> | Signal | In the ticket example |
+> |---|---|
+> | **Success** | Did you finish booking? (yes/no) |
+> | **Time** | How many minutes did it take? |
+> | **Effort** | How many times did you re-type the search or click back? |
+> | **Rating** | Did you tap 👍 or 👎 at the end? |
+>
+> **Two ways to compare versions:**
+>
+> | Tool | Everyday picture | Use when |
+> |---|---|---|
+> | **Side-by-side** | Two chefs cook the same dish; a taster picks the better one | Few users: quick and sensitive |
+> | **A/B test** | Half the customers get menu A, half get menu B, then compare sales | Lots of traffic |
+>
+> **ASK answer:** With only 20 users, an A/B test would not have enough people to show a clear difference, so use side-by-side.
 
 ---
 
@@ -142,6 +300,29 @@ Both metrics we cover compare these two texts by counting overlapping **n-grams*
 And here's the warning, the line at the bottom. Both reward **word overlap** with the reference, **not meaning**. Keep that in your head for the next ten minutes.
 
 **ASK:** Give me a sentence with the same meaning as "the cat sat on the mat" but a very low word overlap. *(pause. Example: "the feline rested on the rug." Say that a human sees the same meaning, but BLEU and ROUGE will not.)*
+
+> 🟢 **Newbie example: "The classroom: student vs teacher 🏫"**
+>
+> The teacher wrote the model answer: **"the cat sat on the mat"**
+> A student wrote: **"the cat is on the mat"**
+>
+> The teacher uses a simple *word-matching* checker with **two questions**:
+>
+> | Checker | Question it asks | Everyday meaning |
+> |---|---|---|
+> | **BLEU** (precision view) | "Of the words **the student wrote**, how many are in the teacher's answer?" | *Is everything you wrote correct?* |
+> | **ROUGE** (recall view) | "Of the words **in the teacher's answer**, how many did the student cover?" | *Did you cover everything needed?* |
+>
+> **n-grams** are just groups of words:
+>
+> | Type | Example from "the cat is on the mat" |
+> |---|---|
+> | 1-gram (single words) | the · cat · is · on · the · mat |
+> | 2-gram (pairs) | "the cat" · "cat is" · "is on" · "on the" · "the mat" |
+> | 3-gram (triples) | "the cat is" · "cat is on" · "is on the" · "on the mat" |
+>
+> **The big warning:** the checker only counts *matching words*. It does **not understand meaning**.
+> - "the feline rested on the rug" means the **same thing**, but shares almost no words, so it gets a **low score**. A human would give full marks.
 
 ---
 
@@ -163,6 +344,22 @@ The lesson: on short texts, always use smoothing, and say which BLEU you used.
 
 **ASK:** Why do you think BLEU needs a brevity penalty? What would happen without one? *(pause. Answer: a very short output with a few matching words would get a perfect precision.)*
 
+> 🟢 **Newbie example: "Counting matching words, step by step"**
+>
+> Teacher: `the cat sat on the mat`  ·  Student: `the cat is on the mat`
+>
+> | Group size | Student's groups | Found in teacher's answer? | Score |
+> |---|---|---|---|
+> | **1 word** | the, cat, is, on, the, mat | the ✅ cat ✅ is ❌ on ✅ the ✅ mat ✅ | **5 / 6** |
+> | **2 words** | the cat ✅ · cat is ❌ · is on ❌ · on the ✅ · the mat ✅ | 3 match | **3 / 5** |
+> | **3 words** | the cat is ❌ · cat is on ❌ · is on the ❌ · on the mat ✅ | 1 match | **1 / 4** |
+> | **4 words** | the cat is on ❌ · cat is on the ❌ · is on the mat ❌ | 0 match | **0 / 3** |
+>
+> **Why does the final score become 0?** BLEU *multiplies* the four scores (roughly). In multiplication, **one zero kills everything**: 0.83 × 0.60 × 0.25 × **0** = 0. Yet the student's answer is nearly perfect, so we use **smoothing** (a small fix so zero doesn't wipe the score) → about **0.38**.
+>
+> **Brevity penalty: the "Hi" trick.**
+> Suppose the student writes just **"the"**. All 1 of the student's words match the teacher's answer: precision = 100%! Silly. So BLEU **cuts the score** when the answer is much shorter than the reference. Without this rule, answering with one safe word would win.
+
 ---
 
 ## Slide 22 · ROUGE (≈6 min)
@@ -178,6 +375,33 @@ Now the same sentence pair, through ROUGE. Look at the chart first: BLEU smoothe
 Notice how BLEU-4 collapses to zero while ROUGE stays informative. That tells you the metrics are not interchangeable.
 
 **ASK:** The generated answer only said "the cat". What would happen to ROUGE recall? To BLEU precision? *(pause. Answer: ROUGE recall drops a lot, because most of the reference is missing. BLEU precision stays high, but the brevity penalty would hit.)*
+
+> 🟢 **Newbie example: "A coverage checklist"**
+>
+> Teacher's answer words: **the · cat · sat · on · the · mat** (6 items). The student's answer: *the cat is on the mat*.
+>
+> | ROUGE type | What it checks | Calculation | Score |
+> |---|---|---|---|
+> | **ROUGE-1** | Teacher's **single words** covered | 5 of 6 covered (missed "sat") | 5/6 → F1 **0.833** |
+> | **ROUGE-2** | Teacher's **word pairs** covered | 3 of 5 pairs (the cat, on the, the mat) | 3/5 → F1 **0.600** |
+> | **ROUGE-L** | Longest run of words in the **same order** (gaps allowed) | "the cat … on the mat" = 5 words | F1 **0.833** |
+>
+> **ROUGE-L in plain words:** "How many words appear in the same order?" Teacher: *the cat **sat** on the mat*. Student: *the cat **is** on the mat*. Skip the one different word, and 5 words line up.
+>
+> **Compare the two checkers on the same sentences:**
+>
+> | Metric | Score |
+> |---|---|
+> | BLEU (smoothed) | 0.38 |
+> | ROUGE-1 | 0.833 |
+> | ROUGE-2 | 0.600 |
+> | ROUGE-L | 0.833 |
+>
+> Different checkers, different marks. **Always say which one you used.**
+>
+> **ASK answer (student wrote only "the cat"):**
+> - ROUGE (coverage): covers 2 of 6 teacher words = **0.33**, a poor mark for missing most of the answer.
+> - BLEU (correctness): both words are right = 100% precision, but the **brevity penalty** reduces it (the answer is far too short).
 
 ---
 
@@ -197,6 +421,21 @@ And watch out. BLEU gives zero for short text without smoothing. ROUGE rewards c
 
 **ASK:** Which would you pick to check whether a generated summary covered the main points of a report? *(pause. Answer: ROUGE, because coverage matters.)*
 
+> 🟢 **Newbie example: "Two questions a teacher asks"**
+>
+> | | **BLEU** | **ROUGE** |
+> |---|---|---|
+> | The teacher's question | "Is **everything you wrote** correct?" | "Did you write **everything needed**?" |
+> | Good for | Translation, fixed phrasing | Summaries, answers (coverage) |
+> | Easy to fool by | Writing very little | Writing a lot or copying the whole book |
+>
+> **Fooling BLEU:** write one safe word → every word is right → high precision (that's why the brevity penalty exists).
+> **Fooling ROUGE:** copy the *entire textbook* → every teacher word is covered → high recall.
+>
+> **Multiple references:** "the cat sat on the mat" and "a cat was sitting on the rug" are both fine answers. If you only keep one model answer, a good student can lose marks just for using different words. So keep **several** reference answers when possible.
+>
+> **ASK answer:** A summary should *cover the main points* → **ROUGE**.
+
 ---
 
 ## Slide 24 · Limits of overlap metrics (≈4 min)
@@ -215,22 +454,82 @@ The rule: use BLEU and ROUGE as regression signals, not as the final word.
 
 Good. Next we go to the lab and see this for ourselves.
 
+> 🟢 **Newbie example: "The checker that can be tricked"**
+>
+> **Case 1: Wrong, but scores high.**
+>
+> | | Sentence |
+> |---|---|
+> | Teacher | "The meeting is at **5 PM** in room 3." |
+> | Student | "The meeting is at **6 PM** in room 3." |
+>
+> Almost every word matches, so BLEU and ROUGE give a **very high score**. But the answer is **wrong**: someone shows up an hour late!
+>
+> **Case 2: Right, but scores low.**
+>
+> | | Sentence |
+> |---|---|
+> | Teacher | "The cat sat on the mat." |
+> | Student | "The feline rested on the rug." |
+>
+> Same meaning, almost no matching words → **low score**.
+>
+> **Case 3: Our lab result.** A student who **copies the textbook line** can beat a student who **explains in their own words** on ROUGE-2 (0.293 vs 0.270). The copier isn't a better answerer. The checker just rewards matching words.
+>
+> **So what do we add?**
+>
+> | Extra check | Plain meaning |
+> |---|---|
+> | **BERTScore** | Compares *meaning*, not just words |
+> | **Groundedness check** | "Is every claim backed by the retrieved page?" (would catch 5 PM vs 6 PM) |
+> | **LLM-as-judge** | An AI grader with a clear rubric, tested against human graders |
+> | **Human review** | A person reads a sample |
+>
+> **Take-home line:** BLEU and ROUGE are a *smoke alarm*: handy to tell you "something changed" after an update, but not a replacement for someone checking the room.
+
 ---
 
 ### Trainer quick reference
 
-| Slide | Topic | Time | Question to ask |
-|---|---|---|---|
-| 12 | Part II divider | 1 min | Which metrics have you used? |
-| 13 | Two layers, offline vs online | 3 min | Chunk size change: offline or online? |
-| 14 | Precision and recall | 5 min | P@10 and R@10 for the same list? |
-| 15 | F1 and cut-off k | 4 min | "Precision is 0.9": what do you ask? |
-| 16 | AP, MAP, MRR, nDCG | 4 min | First relevant at rank 4: RR? |
-| 17 | Choosing the metric | 3 min | Which metric fits your use case? |
-| 18 | Manual evaluation | 5 min | Raters give 5 and 2: what now? |
-| 19 | Task-oriented evaluation | 5 min | Side-by-side or A/B for 20 users? |
-| 20 | Generation metrics idea | 4 min | Same meaning, low overlap sentence? |
-| 21 | BLEU | 7 min | Why a brevity penalty? |
-| 22 | ROUGE | 6 min | Answer is only "the cat": effect? |
-| 23 | BLEU vs ROUGE | 3 min | Which for summary coverage? |
-| 24 | Limits of overlap | 4 min | Wrong number, high overlap: caught? |
+| Slide | Topic | Time | Question to ask | One-line newbie picture |
+|---|---|---|---|---|
+| 12 | Part II divider | 1 min | Which metrics have you used? | Metrics = marks on a report card |
+| 13 | Two layers, offline vs online | 3 min | Chunk size change: offline or online? | Ingredients vs cooking vs customer; kitchen test vs real diners |
+| 14 | Precision and recall | 5 min | P@10 and R@10 for the same list? | Ripe mangoes: clean bag vs complete bag |
+| 15 | F1 and cut-off k | 4 min | "Precision is 0.9": what do you ask? | Seller who shows just one mango |
+| 16 | AP, MAP, MRR, nDCG | 4 min | First relevant at rank 4: RR? | Finding the ripe mango early; 5-star hotels first |
+| 17 | Choosing the metric | 3 min | Which metric fits your use case? | ATM = MRR, contract clauses = recall |
+| 18 | Manual evaluation | 5 min | Raters give 5 and 2: what now? | Two teachers marking one answer |
+| 19 | Task-oriented evaluation | 5 min | Side-by-side or A/B for 20 users? | Did you actually book the ticket? |
+| 20 | Generation metrics idea | 4 min | Same meaning, low overlap sentence? | Student vs teacher, word matching |
+| 21 | BLEU | 7 min | Why a brevity penalty? | Matching words; one zero kills the product; the "Hi" trick |
+| 22 | ROUGE | 6 min | Answer is only "the cat": effect? | Coverage checklist |
+| 23 | BLEU vs ROUGE | 3 min | Which for summary coverage? | "Is it all correct?" vs "Is it all there?" |
+| 24 | Limits of overlap | 4 min | Wrong number, high overlap: caught? | 5 PM vs 6 PM: the checker can be tricked |
+
+---
+
+### Cheat sheet: all numbers from the running examples
+
+| Item | Value |
+|---|---|
+| Relevant ranks (list of 10) | 1, 3, 6 (a 4th relevant item never retrieved) |
+| Precision@5 / Recall@5 | 2/5 = **0.40** / 2/4 = **0.50** |
+| Precision@10 / Recall@10 | 3/10 = **0.30** / 3/4 = **0.75** |
+| F1@5 | **0.444** |
+| AP | (1/1 + 2/3 + 3/6) ÷ 4 = **0.542** |
+| MRR (this list) | **1.0** (first relevant at rank 1) |
+| BLEU n-gram precisions | 5/6, 3/5, 1/4, 0/3 |
+| BLEU-4 unsmoothed / smoothed | **0.00** / about **0.38** |
+| ROUGE-1 / ROUGE-2 / ROUGE-L (F1) | **0.833** / **0.600** / **0.833** |
+| Lab: ROUGE-2 copy baseline vs LLM-style | **0.293** vs **0.270** |
+
+---
+
+### Tips for using the newbie examples
+
+1. **Use the mango picture only for lists (slides 13–17).** Switch to the classroom picture for text (slides 20–24) so people don't mix them up.
+2. **Let people calculate first.** For the mango example, give 30 seconds and ask them to type Precision@5 before you reveal it.
+3. **Don't read every table.** Pick one example per slide. If the room is confident, skip the box and save time.
+4. **If you run behind:** shorten slides 17 and 23 (reference slides) to one minute each, and protect slides 14, 16, 21 and 24.
+5. **Link forward:** the lab computes the same numbers (P@5 = 0.40, AP = 0.5417, BLEU 0.38, ROUGE 0.833/0.600/0.833) with code. Tell participants they will "see these same mangoes and cats in the terminal".
