@@ -1,4 +1,4 @@
-# Trainer Script · Part IV: Common Challenges & Emerging Trends
+**# Trainer Script · Part IV: Common Challenges & Emerging Trends
 
 **Slides 31–38 · T+2:15 – T+2:45 · 30 min**
 Ambiguity, intent, bias: 15 min · User-centric metrics, explainability, ethics: 15 min
@@ -161,3 +161,4 @@ Thank you. In the last part we'll answer your questions and recap.
 | 36 | Explainable search | 3 min | Does a citation guarantee correctness? |
 | 37 | Ethics | 3 min | Most harmful domain for hallucination? |
 | 38 | Evaluation checklist | 5 min | Hardest step for your team? |
+**
