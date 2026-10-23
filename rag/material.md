@@ -1,24 +1,25 @@
-# LLM Evaluation Demonstration
-## Trainer Script (Teleprompter Format) | Expanded Edition
+# LLM EVALUATION DEMONSTRATION
+## Teleprompter Script: continuous read-aloud flow
 
-**How to use this script**
+**HOW TO READ THIS**
 
-- Read the plain text out loud. It is written the way you speak.
-- Text in **[BRACKETS]** is a stage cue. Do not read it aloud.
-- Text marked **[EXTRA]** is added talking material: analogies, examples, stories, questions. It is optional. Drop it first if you run late.
-- Each line is one breath. Pause at every blank line.
-- Times are guides. Total session: 3 hours, including a 10 minute break. Extra material adds roughly 15 to 20 minutes in total, so trim as noted in the Trainer Quick Notes.
+- Read every plain line out loud. Pause at each blank line.
+- **[BRACKETS]** are stage cues. Never read them.
+- **[OPTIONAL]** marks a block you may skip if you run late. It is written to flow straight back into the main text, so skipping it never breaks the story.
+- **[CLICK]** means advance the slide. Each slide ends with a spoken bridge into the next one.
 - Numbers in worked examples are illustrative. Replace them with your own notebook scores if you prefer.
 
-| Section | Slides | Time |
+**RUN SHEET**
+
+| Part | Slides | Time |
 |---|---|---|
-| Opening | 1 to 3 | 5 min |
-| 1. Introduction to LLM evaluation | 4 to 6 | 15 min |
-| 2. Evaluating a non-RAG application | 7 to 18 | 55 min |
-| 3. Building a RAG pipeline | 19 to 25 | 40 min |
+| Opening | 1-3 | 5 min |
+| 1. Introduction | 4-6 | 15 min |
+| 2. Non-RAG evaluation | 7-18 | 55 min |
+| 3. Building the RAG pipeline | 19-25 | 40 min |
 | Break | 26 | 10 min |
-| 4. Evaluating the RAG application | 27 to 39 | 50 min |
-| 5. Conclusion and Q and A | 40 to 42 | 10 min |
+| 4. Evaluating RAG | 27-39 | 50 min |
+| 5. Conclusion and Q and A | 40-42 | 10 min |
 
 ---
 
@@ -26,8 +27,7 @@
 
 ---
 
-## SLIDE 1 | Title
-**[2 min]**
+## SLIDE 1 | Title  [2 min]
 
 Good morning, everyone.
 Welcome to this session on LLM evaluation.
@@ -43,29 +43,30 @@ Then as a RAG application.
 Our tools are LangChain, ChromaDB, Ollama and RAGAS.
 Everything runs locally.
 
-**[EXTRA]**
-Let me explain why "locally" matters.
+**[OPTIONAL]**
+Let me explain why local matters.
 Many companies cannot send internal documents to an outside service.
 Legal, privacy and cost reasons all get in the way.
-So running everything on one machine is not just convenient for a demo.
+So running everything on one machine is not only convenient for a demo.
 It is close to what many real teams have to do.
 
-**[EXTRA: quick poll, 1 minute]**
+**[OPTIONAL: quick poll, 1 minute]**
 Raise your hand if you have built something with an LLM.
 Keep it up if you have measured how good it is, with numbers.
 Most hands go down at the second question.
 That gap is exactly what today is about.
 
+So let me show you the plan.
+
 **[CLICK]**
 
 ---
 
-## SLIDE 2 | Session agenda
-**[2 min]**
+## SLIDE 2 | Session agenda  [2 min]
 
 Here is the plan for the three hours.
 
-Section one is a twenty minute introduction.
+Section one is a short introduction.
 Why is evaluating an LLM different from evaluating a normal machine learning model?
 
 Section two is the longest, fifty-five minutes.
@@ -74,54 +75,58 @@ We evaluate a standalone LLM using BLEU, ROUGE, METEOR, BERTScore and Exact Matc
 Section three is forty minutes.
 We build a RAG pipeline with LangChain and ChromaDB.
 
+Then there is a ten minute break.
+
 Section four is fifty minutes.
 We evaluate that RAG pipeline with RAGAS metrics.
 
 Section five is ten minutes for wrap-up and questions.
 
-There is a ten minute break after section three.
-
 **[POINT to the right-hand cards]**
 Three hours, two demonstrations, one use case.
 
-**[EXTRA]**
+**[OPTIONAL]**
 Notice the shape of the day.
 First we measure a simple system.
 Then we make the system more complex.
 Then we measure again, and we need better tools, because there are more places to fail.
 That is a pattern you will meet again and again in real projects.
 
-**[EXTRA: ground rules, 30 seconds]**
+**[OPTIONAL: ground rules, 30 seconds]**
 Please ask questions as we go.
 If something is unclear, it is probably unclear for three other people too.
 I will park deep technical detours until the end, so we stay on schedule.
 
+Now, what should you walk away with?
+
+**[CLICK]**
+
 ---
 
-## SLIDE 3 | What you will take away
-**[1 min]**
+## SLIDE 3 | What you will take away  [1 min]
 
 By the end, you should be able to do eight things.
-
-Read this list quickly, do not go line by line.
+I will not read them line by line.
 
 You will understand how industry evaluates LLM applications.
 You will see the pipelines for both non-RAG and RAG.
 You will know why the metrics differ by architecture.
 You will be able to interpret the scores.
-And most important, you will connect the business objective to the evaluation design.
+And, most important, you will connect the business objective to the evaluation design.
 
-If you remember one thing from today, remember number five.
+If you remember one thing from today, remember that last one.
 The business goal decides the metric.
 
-**[EXTRA]**
+**[OPTIONAL]**
 Here is a way to test yourself at the end of the day.
 Someone gives you a new LLM project.
 Before they show you any code, can you ask the right three questions?
 What is the business goal?
 What does a bad answer cost?
-What are the parts of the system that can fail?
+What parts of the system can fail?
 If you can ask those, you have learned the main lesson.
+
+Let us begin with why this is hard in the first place.
 
 **[CLICK to Section 1]**
 
@@ -131,20 +136,19 @@ If you can ask those, you have learned the main lesson.
 
 ---
 
-## SLIDE 4 | Why LLM evaluation is different
-**[6 min]**
+## SLIDE 4 | Why LLM evaluation is different  [6 min]
 
 Let us start with a comparison.
 
 In traditional machine learning, the output is a label or a number.
 Spam or not spam.
-Price of a house.
+The price of a house.
 
 There is one correct answer.
-So we use accuracy, precision, recall, F1.
+So we use accuracy, precision, recall and F1.
 Failure is simple. The prediction is wrong.
 
-**[EXTRA]**
+**[OPTIONAL]**
 Think of a spam filter.
 For each email, the answer is yes or no.
 You can count how many it got right.
@@ -160,42 +164,47 @@ Ask for a product description ten times.
 You get ten different texts.
 All of them could be right.
 
-**[EXTRA]**
+**[OPTIONAL]**
 Here is an analogy.
 Evaluating a classifier is like marking a multiple-choice exam.
 Evaluating an LLM is like marking an essay.
-With the essay, two good teachers can give different marks.
-And you need a marking guide, a rubric, to be fair.
+With an essay, two good teachers can give different marks.
+So you need a marking guide, a rubric, to be fair.
 Much of today is about building that rubric with numbers.
 
 And the typical failure is different.
 The text is fluent. It sounds confident. But it is wrong.
 
-**[EXTRA]**
+**[OPTIONAL]**
 This is the dangerous part.
 A wrong house price looks wrong.
 A wrong paragraph looks perfectly fine.
 Fluent language lowers our guard.
 People trust text that reads smoothly.
 
-So what does good mean?
+So what does "good" mean?
 It is no longer a score above a threshold.
 It is defined by the business objective.
 
-**[ASK]** Has anyone here seen an LLM answer that sounded perfect but was wrong?
+**[ASK]**
+Has anyone here seen an LLM answer that sounded perfect but was wrong?
+
 **[Take one or two answers. 1 minute.]**
 
-**[EXTRA: if nobody answers, tell this one]**
+**[OPTIONAL: if nobody answers, tell this one]**
 A well-known real case is a lawyer who used a chatbot to prepare a court filing.
 The chatbot produced case citations that looked real, with names, courts and dates.
 Some of those cases did not exist.
 The writing was fluent and confident, and that is why it slipped through.
 No accuracy score on a label set would have caught that.
 
+Which brings us to the next point: why one number is never enough.
+
+**[CLICK]**
+
 ---
 
-## SLIDE 5 | One metric is never enough
-**[5 min]**
+## SLIDE 5 | One metric is never enough  [5 min]
 
 Because text has many qualities, one number is never enough.
 
@@ -211,21 +220,21 @@ Safety. Is it free of harmful content?
 A text can score well on fluency and fail on correctness.
 A single score hides that trade-off.
 
-**[EXTRA: one example per dimension, say quickly]**
+**[OPTIONAL: one example per dimension, say quickly]**
 Relevance. You ask about the refund policy and it explains shipping.
 Correctness. It says the warranty is two years, but it is one.
 Fluency. The grammar is broken or the phrasing is robotic.
 Tone. A luxury brand writes copy that sounds like a street-market shout.
 Grounding. It adds a claim that appears in no company document.
-Safety. It produces content that is offensive or leaks private data.
+Safety. It produces offensive content or leaks private data.
 
-**[EXTRA]**
+**[OPTIONAL]**
 Notice that these can fail independently.
-A text can be fluent, relevant, on-tone and still invent a fact.
+A text can be fluent, relevant, on-tone, and still invent a fact.
 That is why a dashboard with several numbers beats one grand total.
 Think of a car dashboard.
 You do not want one light called "car health".
-You want fuel, temperature and oil pressure separately.
+You want fuel, temperature and oil pressure, separately.
 
 **[PAUSE]**
 
@@ -234,12 +243,15 @@ Metric choice follows the business objective and the system architecture.
 
 We will return to this sentence many times today.
 
+Now let me show you the storyline for the whole session.
+
+**[CLICK]**
+
 ---
 
-## SLIDE 6 | Two demonstrations, one application
-**[4 min]**
+## SLIDE 6 | Two demonstrations, one application  [4 min]
 
-This is the storyline for the whole session.
+This is the storyline for today.
 
 Demonstration one is a standalone LLM.
 We evaluate it against reference outputs.
@@ -250,7 +262,7 @@ We use Accuracy, Exact Match, BLEU, ROUGE, METEOR and BERTScore.
 Then we add retrieval.
 The application now has new parts, so it has new ways to fail.
 
-**[EXTRA]**
+**[OPTIONAL]**
 A good way to picture this is a student.
 The standalone LLM is a student taking a closed-book exam.
 It answers from memory.
@@ -268,11 +280,15 @@ Now we measure Faithfulness, Answer Relevance, and the Context metrics.
 The goal today is not to memorise syntax.
 It is to understand evaluation workflows, how to read the scores, and how to make design decisions from them.
 
-**[EXTRA]**
+**[OPTIONAL]**
 Libraries change every few months.
 Function names will change.
 But the questions you ask of a score will not change.
 That is the part worth keeping.
+
+Let us start with demonstration one, and with the business objective.
+
+**[CLICK to Section 2]**
 
 ---
 
@@ -280,16 +296,15 @@ That is the part worth keeping.
 
 ---
 
-## SLIDE 7 | Use case: marketing content generation
-**[5 min]**
+## SLIDE 7 | Use case: marketing content generation  [5 min]
 
 Before any code, we state the business objective.
 
 Our use case is marketing content generation.
-The company wants accurate, on-brand copy, faster, with a consistent tone.
+The company wants accurate, on-brand copy, produced faster, with a consistent tone.
 
-**[EXTRA]**
-Why did we choose marketing for the first demo?
+**[OPTIONAL]**
+Why marketing for the first demo?
 Because everyone understands what good copy looks like.
 You do not need domain knowledge to judge the output.
 That lets us focus on the metrics, not the subject matter.
@@ -300,7 +315,7 @@ Quality means the copy is relevant to the brief, faithful to product facts, with
 
 The main risk is fluent text that drifts from the brief or invents product claims.
 
-**[EXTRA]**
+**[OPTIONAL]**
 Let me make the risk concrete.
 Suppose the model writes "waterproof" for a product that is only splash-resistant.
 That is not a style problem.
@@ -315,19 +330,24 @@ A locally hosted LLM generates the copy.
 We compare it with approved reference copy.
 Then we score it and review the results.
 
-**[Switch to the notebook for a quick look at the brief and the prompt. 1 minute.]**
+**[SWITCH to the notebook. Show the brief and the prompt. 1 minute.]**
 
-**[EXTRA: while showing the prompt]**
+**[OPTIONAL: while showing the prompt]**
 Notice the prompt has three parts.
 A role: you are a copywriter for this brand.
 The facts: the product brief, which the model must not go beyond.
 The rules: tone, length and format.
 Most of what we tune later lives in these three parts.
 
+**[SWITCH back to slides]**
+
+Now, how do we build the evaluation workflow around this?
+
+**[CLICK]**
+
 ---
 
-## SLIDE 8 | Building the evaluation workflow
-**[5 min]**
+## SLIDE 8 | Building the evaluation workflow  [5 min + 3 min demo]
 
 Four steps build this workflow.
 
@@ -337,7 +357,7 @@ System instruction, product brief, tone and length rules.
 Two, choose representative inputs.
 Different products, audiences and channels, such as email, social and web.
 
-**[EXTRA]**
+**[OPTIONAL]**
 "Representative" is the key word.
 If all your test inputs are easy, your scores will look great and mean little.
 Include a short product, a long product, a product with many specs, and one tricky case.
@@ -355,7 +375,7 @@ One important point.
 The reference is a design decision. It is not absolute truth.
 A different approved reference would give different scores.
 
-**[EXTRA]**
+**[OPTIONAL]**
 Imagine two marketers each write a perfect tagline for the same bottle.
 Score one against the other and you will not get a hundred percent.
 So a low score does not always mean bad copy.
@@ -363,28 +383,35 @@ It can mean the reference is just one of many good answers.
 
 A small, carefully chosen set is enough to show the workflow.
 
-**[EXTRA]**
+**[OPTIONAL]**
 In real projects, teams start with thirty to a hundred well-chosen examples.
 They grow the set whenever a new failure is found in production.
 Every bug becomes a new test case.
 That is how an evaluation set becomes valuable over time.
 
+Let us run it.
+
 **[DEMO: Run the generation cells in the notebook. 3 minutes.]**
 
-**[EXTRA: during the demo]**
-While it runs, point out three things.
+**[OPTIONAL: while it runs]**
+Notice three things.
 How long each generation takes on local hardware.
-That the outputs differ in wording each time.
-And that we store the output next to the reference so we can compare them side by side.
+That the wording differs each time.
+And that we store each output next to its reference, so we can compare them side by side.
+
+**[SWITCH back to slides]**
+
+Now that we have outputs, we need ways to score them.
+Here are the traditional metrics.
+
+**[CLICK]**
 
 ---
 
-## SLIDE 9 | Traditional metrics at a glance
-**[4 min]**
+## SLIDE 9 | Traditional metrics at a glance  [4 min]
 
 Here are the six traditional metrics in one table.
-
-Read the table top to bottom, one line each.
+I will read it top to bottom, one line each.
 
 Accuracy. Share of outputs judged correct.
 Exact Match. Output identical to the reference. Very strict.
@@ -393,30 +420,29 @@ ROUGE. N-gram recall. Shows how much of the reference is covered.
 METEOR. Adds stems and synonyms.
 BERTScore. Compares meaning using embeddings.
 
-**[EXTRA]**
+**[OPTIONAL]**
 An n-gram is just a run of n words in a row.
 One word is a unigram, two words a bigram, and so on.
-Most of these metrics are really doing careful counting of matching word runs.
+Most of these metrics are careful counting of matching word runs.
 
 Notice the direction.
 Metrics at the top are strict about words.
 Metrics at the bottom are closer to meaning.
 
-**[EXTRA]**
+**[OPTIONAL]**
 Think of it as a ladder.
-The bottom rung asks: are these the exact same characters?
-Higher up asks: do they share words? Then: do they share word forms and synonyms?
+The bottom rung asks: are these exactly the same characters?
+Higher up it asks: do they share words? Then: word forms and synonyms?
 At the top it asks: do they mean the same thing?
 Each step up is more forgiving, and more expensive to compute.
 
-We will now look at each one in detail.
+We will now look at each one in detail, starting with the simplest.
+
+**[CLICK]**
 
 ---
 
-## SLIDE 10 | Deep dive: Exact Match and Accuracy
-**[4 min]**
-
-Start with the simplest.
+## SLIDE 10 | Deep dive: Exact Match and Accuracy  [4 min]
 
 Exact Match is one if the output equals the reference, otherwise zero.
 Accuracy is correct outputs divided by total outputs.
@@ -425,7 +451,7 @@ Accuracy is correct outputs divided by total outputs.
 
 We normalise case and spacing, compare the strings, score pass or fail, and average.
 
-**[EXTRA: tiny example]**
+**[OPTIONAL: tiny example]**
 Reference: "Order today and save 15 percent."
 Output: "Order today and save 15 percent!"
 One exclamation mark in place of a full stop, and Exact Match gives zero.
@@ -434,29 +460,32 @@ That is why normalisation, like removing punctuation and lowercasing, matters.
 **[POINT to Strengths]**
 
 It is simple, fast and transparent.
-Perfect for labels, short answers and tags.
+It is perfect for labels, short answers and tags.
 
-**[EXTRA]**
+**[OPTIONAL]**
 Good fits are things like: is the sentiment positive or negative, which category is this ticket, what is the invoice number.
 There is one right string, and you can check it.
 
 **[POINT to Limits]**
 
-But one extra word and the score is zero.
+But with one extra word, the score is zero.
 For marketing copy, Exact Match will be near zero even when the copy is excellent.
 
 So use it for classification-style checks, not for free-form copy.
 
-**[EXTRA]**
+**[OPTIONAL]**
 A useful trick.
 Even in free-form copy, you can use Exact Match on parts of the output.
 For example, check that the discount "15 percent" appears, or that the product name is spelled correctly.
 That is a small, rule-based check, and it catches exactly the factual slips the fancy metrics miss.
 
+Exact Match is too strict for copy. So let us look at a metric built for flexible text.
+
+**[CLICK]**
+
 ---
 
-## SLIDE 11 | Deep dive: BLEU
-**[5 min]**
+## SLIDE 11 | Deep dive: BLEU  [5 min]
 
 BLEU comes from machine translation.
 
@@ -465,43 +494,46 @@ BLEU counts how many one to four word sequences in the output also appear in the
 That is precision.
 Then it applies a brevity penalty, so very short outputs cannot cheat.
 
-**[EXTRA: why the brevity penalty exists]**
-Imagine the output is just one word, and that word is in the reference.
-Precision would be a perfect one hundred percent.
+**[OPTIONAL: why the brevity penalty exists]**
+Imagine the output is one word, and that word is in the reference.
+Precision would be a perfect hundred percent.
 Without a penalty, a tiny output could win.
-The brevity penalty says: if you are much shorter than the reference, you lose points.
+So the penalty says: if you are much shorter than the reference, you lose points.
 
-**[EXTRA: tiny example, pick numbers loosely]**
+**[OPTIONAL: tiny example]**
 Reference: "keeps drinks cold for 24 hours".
 Output: "keeps drinks chilled for 24 hours".
 Most words match, but "chilled" does not match "cold".
-The bigrams and trigrams that include that word also fail.
+The word pairs and triples that include that word also fail.
 So the score drops sharply for one synonym.
 That is why BLEU feels harsh on paraphrase.
 
 **[POINT to Strengths]**
 
-It is cheap to run on large sets.
-Good for tracking change between prompt versions.
+BLEU is cheap to run on large sets.
+It is good for tracking change between prompt versions.
 
 **[POINT to Limits]**
 
 But it punishes valid paraphrase.
-If I write chilled instead of cold, BLEU sees a mismatch.
+If I write "chilled" instead of "cold", BLEU sees a mismatch.
 It knows nothing about meaning, facts or tone.
 
 So treat BLEU as a wording-similarity signal.
 Never as a quality verdict.
 
-**[EXTRA]**
+**[OPTIONAL]**
 In practice, BLEU values for good marketing copy are often low, because creative writing varies so much.
 So do not panic at a score like 0.2 or 0.3.
 What matters is the trend across versions, and whether the numbers agree with your own reading of the outputs.
 
+BLEU looks at precision. Next is its mirror image.
+
+**[CLICK]**
+
 ---
 
-## SLIDE 12 | Deep dive: ROUGE
-**[4 min]**
+## SLIDE 12 | Deep dive: ROUGE  [4 min]
 
 ROUGE is the mirror image of BLEU.
 
@@ -509,68 +541,74 @@ BLEU asks how much of the output is in the reference.
 ROUGE asks how much of the reference is in the output.
 That is recall.
 
-**[EXTRA]**
-Here is a simple memory trick.
-BLEU is about Being precise: is what I said in the reference?
+**[OPTIONAL]**
+Here is a memory trick.
+BLEU is about being precise: is what I said in the reference?
 ROUGE is about coverage: did I cover what the reference said?
 
 ROUGE-1 counts shared words.
 ROUGE-2 counts shared word pairs.
 ROUGE-L finds the longest in-order match.
 
-**[EXTRA]**
+**[OPTIONAL]**
 ROUGE-1 is forgiving, because single words match easily.
 ROUGE-2 is stricter, because the pair has to match in order.
 ROUGE-L checks whether the main structure of the sentence is kept, even with gaps in between.
 
-It is popular for summaries and long text.
+ROUGE is popular for summaries and long text.
 
 The limit to remember is length.
 A longer output can raise recall without adding any quality.
 So always read ROUGE with length in mind.
 
-**[EXTRA]**
+**[OPTIONAL]**
 Picture a student who writes three pages for a one-page question.
 By sheer volume, they will mention most of what the examiner wanted.
 Recall looks high.
 But the answer is padded, and nobody wants to read it.
 That is why we compare ROUGE with output length, and often look at the F-measure, which balances both.
 
+Both BLEU and ROUGE count exact words. METEOR relaxes that.
+
+**[CLICK]**
+
 ---
 
-## SLIDE 13 | Deep dive: METEOR
-**[3 min]**
+## SLIDE 13 | Deep dive: METEOR  [3 min]
 
 METEOR is a softer overlap metric.
 
 It aligns words by exact form, by stem, and by synonym.
-So running matches run, and strong matches powerful.
+So "running" matches "run", and "strong" matches "powerful".
 
 It combines precision and recall, but favours recall.
 It also penalises matches that are scattered in the wrong order.
 
-**[EXTRA]**
-The "wrong order" part is called a fragmentation penalty.
+**[OPTIONAL]**
+That last part is called a fragmentation penalty.
 If the matched words appear as one smooth run, the penalty is small.
 If they are scattered all over, the penalty is bigger.
 That gives METEOR some sense of fluency, which BLEU and ROUGE lack.
 
-It often tracks human judgement better than BLEU.
+METEOR often tracks human judgement better than BLEU.
 
 The cost is that it depends on lexical resources and runs slower.
 And like the others, it cannot check facts.
 
-**[EXTRA]**
+**[OPTIONAL]**
 Those lexical resources are mostly English.
 So for other languages, METEOR support can be weaker.
 Check that before you rely on it.
 
-Use it when wording varies but meaning is close.
+Use METEOR when wording varies but meaning is close.
+
+But what if we want to compare meaning directly?
+
+**[CLICK]**
 
 ---
 
-## SLIDE 14 | Deep dive: BERTScore
-**[4 min]**
+## SLIDE 14 | Deep dive: BERTScore  [4 min]
 
 BERTScore moves from words to meaning.
 
@@ -578,66 +616,69 @@ It embeds every token of the output and the reference.
 Then it matches each token to its most similar counterpart using cosine similarity.
 The result is precision, recall and F1.
 
-**[EXTRA]**
+**[OPTIONAL]**
 Here is the picture.
 An embedding turns a word, in its sentence, into a list of numbers.
 Words with similar meaning in similar contexts end up with similar numbers.
-So "cold" and "chilled" are close together, even though the letters are different.
-Cosine similarity measures how close the arrows point.
+So "cold" and "chilled" sit close together, even though the letters differ.
+Cosine similarity measures how closely the arrows point the same way.
 
 So two sentences with different words but the same idea score high.
 
-The limits.
+Now the limits.
 Scores cluster in a narrow high band, so small differences matter.
 It depends on the embedding model.
 And it checks similarity to the reference, not whether the facts are true.
 
-**[EXTRA]**
-Because the scores sit between roughly 0.85 and 0.95 for most reasonable text, a drop from 0.92 to 0.89 can be meaningful.
-Some libraries offer "baseline rescaling" to stretch the range and make differences easier to read.
+**[OPTIONAL]**
+Because most reasonable text scores between roughly 0.85 and 0.95, a drop from 0.92 to 0.89 can be meaningful.
+Some libraries offer baseline rescaling to stretch the range and make differences easier to read.
 Also note that "24 hours" and "48 hours" are very close in embedding space.
 That is exactly why BERTScore can reward a wrong number.
 
-It is the best traditional metric for paraphrase.
+BERTScore is the best traditional metric for paraphrase.
 But pair it with a factual check.
+
+Let me show you exactly why, with one reference and three outputs.
+
+**[CLICK]**
 
 ---
 
-## SLIDE 15 | Worked example: three outputs, one reference
-**[6 min]**
+## SLIDE 15 | Worked example: three outputs, one reference  [6 min]
 
 Let us make this concrete.
 
 **[READ the reference aloud]**
-Our new EcoBottle keeps drinks cold for 24 hours. Order today and save 15 percent.
+"Our new EcoBottle keeps drinks cold for 24 hours. Order today and save 15 percent."
 
 **[Output A]**
-It uses different words, but the same facts.
+Output A uses different words, but the same facts.
 BLEU is low, because the wording changed.
 BERTScore is high, because the meaning is the same.
 This is good copy.
 
-**[EXTRA: a possible Output A text you can read out]**
+**[OPTIONAL: read Output A]**
 "Meet the EcoBottle: your drink stays chilled for a full day. Buy now and take 15 percent off."
-Almost every word is different from the reference.
+Almost every word differs from the reference.
 But a customer reads exactly the same offer.
 
 **[Output B]**
-Almost identical wording, but it says 48 hours instead of 24.
+Output B has almost identical wording, but it says 48 hours instead of 24.
 BLEU, ROUGE and BERTScore are all high.
 But this copy is wrong, and it could mislead customers.
 
-**[EXTRA: a possible Output B text]**
+**[OPTIONAL: read Output B]**
 "Our new EcoBottle keeps drinks cold for 48 hours. Order today and save 15 percent."
 Only one number changed.
 To a human, that is a serious error.
 To a word-overlap metric, it is a tiny difference.
 
 **[Output C]**
-Generic copy that ignores the brief.
+Output C is generic copy that ignores the brief.
 All the scores are low.
 
-**[EXTRA: a possible Output C text]**
+**[OPTIONAL: read Output C]**
 "Stay hydrated with our premium range of products. Visit our store for great deals."
 Nothing wrong with the grammar.
 But no product, no number, no offer.
@@ -647,20 +688,25 @@ But no product, no number, no offer.
 Output B is the lesson.
 The metrics rewarded a factual error.
 
-**[ASK]** Which of these three would you want to catch before publishing?
+**[ASK]**
+Which of these three would you want to catch before publishing?
 
-**[EXTRA: expected answer and follow-up]**
+**[OPTIONAL: follow-up]**
 Most people say B.
-Ask: which one would the metrics have flagged?
+Now, which one would the metrics have flagged?
 The answer is C.
 So the metrics catch the output that is obviously off, and miss the one that is dangerously close.
 
-**[Mention]** These are qualitative readings. We will see the real scores in the notebook.
+**[Mention]**
+These are qualitative readings. We will see the real scores in the notebook.
+
+This pattern, where metrics disagree with common sense, shows up often. Let me name the three versions.
+
+**[CLICK]**
 
 ---
 
-## SLIDE 16 | When metrics disagree
-**[4 min]**
+## SLIDE 16 | When metrics disagree  [4 min]
 
 Three patterns you will see again and again.
 
@@ -671,10 +717,10 @@ The copy is acceptable. BLEU simply understates quality.
 Pattern B. Close wording, wrong claim.
 BLEU and ROUGE are high, but one product fact is wrong.
 Overlap hides factual errors.
-Add fact checks or an LLM judge.
+Add fact checks, or an LLM judge.
 
-**[EXTRA]**
-An LLM judge is a second model that reads the output, plus the facts, and answers a question like "does this text contradict the brief?"
+**[OPTIONAL]**
+An LLM judge is a second model that reads the output and the facts, and answers a question like "does this text contradict the brief?"
 We will use exactly this idea in Section 4, so keep it in mind.
 
 Pattern C. Right facts, off-brand voice.
@@ -682,7 +728,7 @@ Moderate scores everywhere.
 No overlap metric captures voice.
 Add a rubric or human review.
 
-**[EXTRA]**
+**[OPTIONAL]**
 A rubric is a short checklist, for example: friendly tone yes or no, no slang, ends with a call to action.
 Even a three-line rubric, applied consistently, tells you things BLEU never can.
 
@@ -690,15 +736,18 @@ Even a three-line rubric, applied consistently, tells you things BLEU never can.
 Read several metrics together.
 And always inspect real outputs.
 
-**[EXTRA]**
+**[OPTIONAL]**
 My personal rule is simple.
 Before you trust any number, read ten real outputs.
 If the numbers and your reading disagree, trust your reading first, then find out why.
 
+So what are the overall limits of these metrics?
+
+**[CLICK]**
+
 ---
 
-## SLIDE 17 | Limits of traditional metrics
-**[4 min]**
+## SLIDE 17 | Limits of traditional metrics  [4 min]
 
 Let us summarise the limits.
 
@@ -707,12 +756,12 @@ They reward surface wording rather than meaning.
 They are blind to factual errors and brand voice.
 And a score by itself has no business meaning.
 
-**[EXTRA]**
+**[OPTIONAL]**
 That last point deserves a moment.
 Suppose I tell you the BLEU score is 0.31.
 Is that good?
-It depends on the task, the references, the length, and the version before it.
-A score only has meaning compared against something: a previous run, a baseline, or a business threshold.
+It depends on the task, the references, the length, and the previous version.
+A score only has meaning compared against something: an earlier run, a baseline, or a business threshold.
 
 **[POINT to right card]**
 
@@ -727,15 +776,18 @@ Tune temperature and top-p.
 And keep the reference set as a regression test.
 Re-score it after every change.
 
-**[EXTRA]**
-Regression test means: after a change, did anything that used to work get worse?
+**[OPTIONAL]**
+A regression test asks: after a change, did anything that used to work get worse?
 Developers do this for normal software.
 The reference set plays the same role for your LLM application.
 
+Let us look at the levers we can actually pull.
+
+**[CLICK]**
+
 ---
 
-## SLIDE 18 | Levers for improving the application
-**[5 min]**
+## SLIDE 18 | Levers for improving the application  [5 min + 3 min demo]
 
 Here are the five levers, in a table.
 
@@ -752,16 +804,16 @@ Top-p.
 Lower gives safer, more predictable text.
 
 Max tokens.
-Controls length, so it affects ROUGE recall and the BLEU penalty.
+This controls length, so it affects ROUGE recall and the BLEU penalty.
 
-**[EXTRA: simple intuition for temperature and top-p]**
+**[OPTIONAL: intuition for temperature and top-p]**
 Temperature is how adventurous the model is when choosing the next word.
 At zero it nearly always takes the most likely word.
 At a high value it will sometimes take a surprising one.
 Top-p limits the pool of words the model may pick from, to the most likely ones that add up to a chosen probability.
-So low top-p means a short, safe list of candidates.
+So a low top-p means a short, safe list of candidates.
 
-**[EXTRA: what to expect]**
+**[OPTIONAL: what to expect]**
 For marketing, you may want a little variety, so a moderate temperature.
 For scoring runs, use a low temperature, so that a change in score reflects a change in your system, not random luck.
 
@@ -772,20 +824,27 @@ Change one lever at a time.
 Re-run the same reference set.
 Otherwise you will not know what caused the change.
 
-**[EXTRA]**
+**[OPTIONAL]**
 If you change the prompt and the temperature at once, and the score goes up, which one helped?
 You cannot tell.
 That is the same discipline as a science experiment: change one variable.
 
+Let us try it.
+
 **[DEMO: Change temperature in the notebook, re-run, compare scores. 3 minutes.]**
 
-**[EXTRA: during the demo]**
-Run the same input twice at a high temperature and show the scores differ.
-That makes the point that some score movement is just noise.
-Then say: this is why we want enough examples, and why we avoid reading too much into a small score change.
+**[OPTIONAL: during the demo]**
+Run the same input twice at a high temperature and show that the scores differ.
+That shows some score movement is just noise.
+This is why we want enough examples, and why we avoid reading too much into a small change.
 
-**[Section 2 complete. Move to Section 3.]**
+**[SWITCH back to slides]**
 
+That completes demonstration one.
+We have a standalone LLM, scored with traditional metrics.
+Now we change the architecture, and give the model our own documents.
+
+**[Section 2 complete. CLICK to Section 3.]**
 
 ---
 
@@ -793,15 +852,12 @@ Then say: this is why we want enough examples, and why we avoid reading too much
 
 ---
 
-## SLIDE 19 | RAG pipeline architecture
-**[6 min]**
-
-Now we change the architecture.
+## SLIDE 19 | RAG pipeline architecture  [6 min]
 
 A standalone LLM answers from its training data only.
 RAG lets it answer from our documents.
 
-**[EXTRA]**
+**[OPTIONAL]**
 Why not just train the model on our documents?
 Fine-tuning is slow, costly, and the knowledge gets frozen at training time.
 When a policy changes next week, you would have to train again.
@@ -817,9 +873,9 @@ One, document collection. Load and split documents into chunks.
 Two, embedding generation. Turn each chunk into a vector.
 Three, vector storage. Save the vectors in ChromaDB.
 
-**[EXTRA]**
+**[OPTIONAL]**
 Think of a library.
-Indexing is the librarian cataloguing every book by topic, so that books on similar subjects sit near each other.
+Indexing is the librarian cataloguing every book by topic, so books on similar subjects sit near each other.
 The catalogue is built once, and updated when new books arrive.
 
 **[POINT to bottom row: Query time]**
@@ -829,25 +885,29 @@ Four, retrieval. Find the chunks closest to the question.
 Five, context augmentation. Put those chunks into the prompt.
 Six, response generation. The LLM answers from that context.
 
-**[EXTRA]**
-At query time, the same librarian takes your question, walks to the right shelf, brings back a few pages, and the writer composes an answer using only those pages.
+**[OPTIONAL]**
+At query time, the same librarian takes your question, walks to the right shelf, brings back a few pages, and a writer composes an answer using only those pages.
 
 Keep this picture in your head.
 Every box is a place where the system can fail.
 
-**[EXTRA: say slowly, one failure per box]**
-Loading can miss a file or garble a table in a PDF.
+**[OPTIONAL: one failure per box, say slowly]**
+Loading can miss a file, or garble a table in a PDF.
 Chunking can cut a sentence in half.
 Embedding can place two related ideas far apart.
 Storage and search can return near-matches that are not truly relevant.
 Augmentation can stuff the prompt with too much text.
 And generation can still ignore the context.
-Six boxes, six ways to fail. This is why Section 4 needs more than one metric.
+Six boxes, six ways to fail.
+This is why Section 4 needs more than one metric.
+
+Let me show you the tools behind each box.
+
+**[CLICK]**
 
 ---
 
-## SLIDE 20 | Tools behind each stage
-**[4 min]**
+## SLIDE 20 | Tools behind each stage  [4 min]
 
 Here is the tool for each stage.
 
@@ -858,10 +918,10 @@ A LangChain retriever returns the top-k chunks.
 A prompt template and chain combine question and context.
 And a local LLM served with Ollama writes the answer.
 
-**[EXTRA]**
-Let me give each one a one-line role.
+**[OPTIONAL]**
+A one-line role for each.
 LangChain is the glue: it connects the steps in a chain.
-The embedding model is the translator from text to numbers.
+The embedding model translates text into numbers.
 ChromaDB is a database that is good at "find me the nearest vectors".
 Ollama is the engine that runs the language model on your own machine.
 None of these is special. Each can be swapped for another tool with the same job.
@@ -869,15 +929,18 @@ None of these is special. Each can be swapped for another tool with the same job
 Everything runs on this machine.
 No data leaves it.
 
-**[EXTRA]**
+**[OPTIONAL]**
 This design also makes experiments fair.
 You can swap the embedding model, keep everything else the same, and measure the difference.
 We will do exactly that kind of single-change experiment in Section 4.
 
+Now, the settings that decide how well retrieval works.
+
+**[CLICK]**
+
 ---
 
-## SLIDE 21 | Indexing and retrieval parameters
-**[5 min]**
+## SLIDE 21 | Indexing and retrieval parameters  [5 min]
 
 These parameters decide how well retrieval works.
 They are starting points, not rules.
@@ -885,7 +948,7 @@ They are starting points, not rules.
 Chunk size. Five hundred to a thousand characters.
 Bigger chunks give more context, but more noise.
 
-**[EXTRA]**
+**[OPTIONAL]**
 Imagine cutting a book into index cards.
 Cards that are too small hold half a thought, so the answer is split across cards.
 Cards that are too large carry a lot of unrelated text, and the model has to dig for the useful sentence.
@@ -893,24 +956,24 @@ Cards that are too large carry a lot of unrelated text, and the model has to dig
 Chunk overlap. Ten to twenty percent.
 It keeps a topic from being cut in half.
 
-**[EXTRA]**
+**[OPTIONAL]**
 Overlap means the end of one chunk repeats at the start of the next.
-So if an important sentence falls on the boundary, it still appears whole in at least one chunk.
+So if an important sentence falls on a boundary, it still appears whole in at least one chunk.
 The cost is a slightly bigger index and some repeated text.
 
 Top-k. Three to five chunks.
-Higher k improves recall but lowers precision.
+A higher k improves recall but lowers precision.
 
-**[EXTRA]**
+**[OPTIONAL]**
 Top-k is how many chunks we fetch.
 Fetch more, and you are more likely to include the needed one. That is recall.
 But you also bring more irrelevant ones, which adds noise and uses up prompt space. That is lower precision.
-This trade-off is one you will see in the scores.
+You will see this trade-off in the scores.
 
 Embedding model. A compact sentence model.
 Distance metric. Cosine similarity.
 
-**[EXTRA]**
+**[OPTIONAL]**
 A bigger embedding model usually retrieves better, but is slower and needs more memory.
 Pick the smallest one that meets your quality bar.
 
@@ -919,12 +982,16 @@ Pick the smallest one that meets your quality bar.
 We will tune these in Section 4, using the evaluation scores.
 That is the whole point of measuring.
 
+Now let us see the code.
+
+**[CLICK]**
+
 ---
 
-## SLIDE 22 | Pipeline code walkthrough
-**[10 min]**
+## SLIDE 22 | Pipeline code walkthrough  [10 min]
 
 Now the code.
+
 **[SWITCH to the notebook and run cell by cell. Use this slide as a map.]**
 
 **[Left card: Indexing]**
@@ -933,10 +1000,10 @@ We split them with a recursive character splitter.
 Chunk size eight hundred, overlap one hundred.
 Then we embed the chunks and store them in Chroma.
 
-**[EXTRA: what to point at while running]**
-After loading, print how many documents and how many pages came in.
+**[OPTIONAL: what to point at while running]**
+After loading, print how many documents and pages came in.
 After splitting, print the number of chunks and show two or three of them.
-Ask the audience: does this chunk make sense on its own?
+Ask: does this chunk make sense on its own?
 That simple look often reveals a problem before any metric does.
 The recursive splitter tries paragraph breaks first, then sentences, then words.
 That is why it usually respects natural boundaries better than a plain cut every N characters.
@@ -947,27 +1014,33 @@ We connect the Ollama model.
 We retrieve the chunks for the question.
 We build the prompt and call the model.
 
-**[EXTRA: what to point at]**
+**[OPTIONAL: what to point at]**
 Print the retrieved chunks for one question before generating the answer.
-Show the audience the raw evidence the model will see.
+That shows the audience the raw evidence the model will see.
 Then show the prompt template, and read the instruction aloud:
 "Answer only from the context below. If the answer is not in the context, say you do not know."
 That sentence matters a great deal for faithfulness, and we will come back to it.
 
-**[Say]** The code on the slide is simplified.
+**[Say]**
+The code on the slide is simplified.
 Exact imports can change between LangChain versions.
 The notebook is the source of truth.
 
-**[EXTRA: if something breaks live]**
+**[OPTIONAL: if something breaks live]**
 Stay calm, and treat it as part of the lesson.
 Read the error message aloud, because most errors are version or path problems.
 Check that Ollama is running, the model name matches, and the Chroma folder exists.
-Say: this is exactly what the last slide, on using an LLM as a partner, is for.
+This is exactly what the last slide, on using an LLM as a partner, is for.
+
+**[SWITCH back to slides]**
+
+The pipeline works. But does it beat the standalone model?
+
+**[CLICK]**
 
 ---
 
-## SLIDE 23 | Standalone LLM versus RAG
-**[4 min]**
+## SLIDE 23 | Standalone LLM versus RAG  [4 min + 2 min demo]
 
 Same questions, two applications.
 
@@ -979,7 +1052,7 @@ But it is simple to build.
 RAG answers from retrieved company content.
 It is grounded and traceable.
 
-**[EXTRA]**
+**[OPTIONAL]**
 Traceable means that for any answer, you can point to the chunk and the source document it came from.
 When a user asks "where did this come from?", you have an answer.
 For compliance and trust, this is a big advantage.
@@ -990,23 +1063,30 @@ But note the trade-off.
 Retrieval improves grounding, and it adds new places to fail.
 Chunking, retrieval and context can all go wrong.
 
-**[EXTRA]**
-RAG also adds cost: more components to run, more latency per question, and more things to maintain.
+**[OPTIONAL]**
+RAG also adds cost: more components to run, more latency per question, and more to maintain.
 So RAG is not always the right choice.
-If the task does not need company knowledge, like the marketing copy in Demonstration one, a standalone model may be simpler and good enough.
+If the task does not need company knowledge, like the marketing copy in demonstration one, a standalone model may be simpler and good enough.
+
+Let us see the difference live.
 
 **[DEMO: Ask one company-specific question to both. Compare answers. 2 minutes.]**
 
-**[EXTRA: how to pick the demo question]**
-Choose a fact that only exists in your documents, such as a leave policy number of days or a specific escalation step.
+**[OPTIONAL: how to frame the demo]**
+Choose a fact that exists only in your documents, such as the number of leave days or a specific escalation step.
 The standalone model will either refuse, or invent a plausible answer.
-Highlight the invented answer: it will look just as confident as the correct one from RAG.
-Ask the audience how they would tell the difference without seeing the document.
+Point out that the invented answer looks just as confident as the correct RAG one.
+Ask: how would you tell the difference without seeing the document?
+
+**[SWITCH back to slides]**
+
+RAG helped. But it does not always retrieve the right thing. Let me show you when it fails.
+
+**[CLICK]**
 
 ---
 
-## SLIDE 24 | Successful and unsuccessful retrieval
-**[5 min]**
+## SLIDE 24 | Successful and unsuccessful retrieval  [5 min]
 
 Let me show both outcomes.
 
@@ -1023,70 +1103,79 @@ A chunk splits a topic in the middle.
 Relevant chunks rank below irrelevant ones.
 Or the relevant document does not exist at all.
 
-**[EXTRA: one example per cause]**
+**[OPTIONAL: one example per cause]**
 Wording mismatch. The user asks about "time off for a new baby" and the document says "parental leave".
 Embeddings help here, but they are not perfect.
-Split topic. The leave policy lists eligibility in one chunk and the number of days in the next, and only one is retrieved.
+Split topic. The policy lists eligibility in one chunk and the number of days in the next, and only one is retrieved.
 Wrong ranking. A general HR overview ranks above the specific leave section because it mentions "leave" more often.
-Missing document. The answer simply is not in the knowledge base.
+Missing document. The answer is simply not in the knowledge base.
 In that last case, the best behaviour is for the system to say "I could not find this".
 
 **[DEMO: Rephrase a question until retrieval fails. Show the retrieved chunks.]**
 
-**[EXTRA: during the demo]**
+**[OPTIONAL: during the demo]**
 Start with a question that works.
 Then replace key terms with synonyms, step by step, and watch the retrieved chunks drift.
 Ask the audience to predict when it will break.
 This makes the abstract idea of retrieval failure visible.
 
 **[POINT to the bottom line]**
+
 These are the failures that RAG evaluation metrics are built to expose.
+
+**[SWITCH back to slides]**
+
+Before the break, let us ask why any of this matters outside a notebook.
+
+**[CLICK]**
 
 ---
 
-## SLIDE 25 | Enterprise knowledge assistants
-**[3 min]**
-
-Why does this matter outside a notebook?
+## SLIDE 25 | Enterprise knowledge assistants  [3 min]
 
 Four examples.
+
 An HR policy assistant for leave and benefits.
 A support knowledge base that helps agents resolve tickets.
 Compliance question and answer over regulations.
 Sales enablement for product facts and pricing rules.
 
-**[EXTRA: what a wrong answer costs in each]**
+**[OPTIONAL: what a wrong answer costs in each]**
 HR. An employee takes leave they are not entitled to, or misses leave they are.
 Support. An agent gives a wrong fix, and the customer calls back angry.
 Compliance. A wrong reading of a regulation can mean a fine.
-Sales. A wrong discount rule is a quoted price the company has to honour or walk back.
+Sales. A wrong discount rule becomes a quoted price the company has to honour or walk back.
 
 In every case, answers must be correct, grounded and traceable to a source.
 A wrong answer here is not just a bad sentence.
 It is a business risk.
 
-**[EXTRA]**
+**[OPTIONAL]**
 Notice this connects to our key sentence.
 Because the risk is higher in compliance than in sales emails, the thresholds we set on the scores should be higher too.
 The business goal decides the metric, and also the passing mark.
 
+That is a good place to stop.
+
+**[CLICK]**
+
 ---
 
-## SLIDE 26 | Break
-**[10 min]**
+## SLIDE 26 | Break  [10 min]
 
 Let us take a ten minute break.
 
 We resume with Section 4.
 There we measure how well this RAG pipeline works.
 
-**[Use the break to verify the notebook and RAGAS setup are ready.]**
+**[Use the break to verify the notebook and the RAGAS setup are ready.]**
 
-**[EXTRA: a question to leave with the audience]**
+**[OPTIONAL: leave the audience with a question]**
 While you have your coffee, think about this.
 If our RAG assistant gives a wrong answer, how would you find out whether the search or the writing was to blame?
 We will answer that right after the break.
 
+**[CLICK to Section 4 when the room is back]**
 
 ---
 
@@ -1094,15 +1183,12 @@ We will answer that right after the break.
 
 ---
 
-## SLIDE 27 | Why RAG needs more than quality scores
-**[5 min]**
+## SLIDE 27 | Why RAG needs more than quality scores  [5 min]
 
 Welcome back.
 
-**[EXTRA]**
 Before the break I left you with a question.
 Who is to blame when a RAG answer is wrong: the search or the writing?
-Hold your answer for a minute.
 
 Look at the flow across the top.
 Question, retriever, retrieved context, generator, answer.
@@ -1114,8 +1200,8 @@ Or generation failed.
 
 A single answer-quality score cannot tell these apart.
 
-**[EXTRA]**
-Think of a doctor who gets a wrong diagnosis.
+**[OPTIONAL]**
+Think of a doctor who gives a wrong diagnosis.
 Either the lab tests were wrong, or the doctor misread correct tests.
 If you only know the diagnosis was wrong, you do not know whether to fix the lab or retrain the doctor.
 Same here.
@@ -1123,24 +1209,28 @@ Same here.
 **[POINT to the two middle boxes]**
 
 So we measure in layers.
-Retrieval quality. Context Precision, Context Recall, Context Relevance.
-Generation quality. Faithfulness, Answer Relevance.
+Retrieval quality: Context Precision, Context Recall, Context Relevance.
+Generation quality: Faithfulness, Answer Relevance.
 
 **[POINT to the bottom bar]**
+
 And end to end, Answer Correctness compares the final answer with the reference.
+
+Let me introduce the framework that computes these.
+
+**[CLICK]**
 
 ---
 
-## SLIDE 28 | RAGAS metrics explained
-**[4 min]**
+## SLIDE 28 | RAGAS metrics explained  [4 min]
 
 RAGAS is an industry-standard framework for this.
 
-**[EXTRA]**
+**[OPTIONAL]**
 RAGAS stands for Retrieval Augmented Generation Assessment.
 It is open source, and a popular starting point.
 Many teams also use other tools with similar ideas, so the concepts matter more than the package name.
-Note that most of its metrics use a language model as a judge, so the scores can vary a little between runs and judge models.
+Note that most of its metrics use a language model as a judge, so the scores can vary a little between runs and between judge models.
 
 Read the middle column as questions.
 
@@ -1152,11 +1242,12 @@ Context Relevance. How much of the context is useful?
 Answer Correctness. How close is the final answer to the reference?
 
 **[POINT to the right column]**
-Notice the layer each one checks.
+
+Notice which layer each one checks.
 Generation, retrieval, or end to end.
 That column is how we will diagnose problems.
 
-**[EXTRA: memory aid]**
+**[OPTIONAL: memory aid]**
 Faithfulness: "Did you make things up?"
 Answer relevance: "Did you answer my question?"
 Context precision: "Is the useful stuff at the top?"
@@ -1164,10 +1255,13 @@ Context recall: "Did you find everything needed?"
 Correctness: "Is the final answer right?"
 Five plain questions. You can ask them about any RAG system.
 
+What data do these metrics need?
+
+**[CLICK]**
+
 ---
 
-## SLIDE 29 | The evaluation dataset
-**[3 min]**
+## SLIDE 29 | The evaluation dataset  [3 min]
 
 RAGAS needs four fields.
 
@@ -1176,27 +1270,33 @@ Contexts. The chunks the retriever returned.
 Answer. What the RAG application generated.
 Ground truth. The reference answer from experts.
 
-**[EXTRA]**
+**[OPTIONAL]**
 Notice that three of the four fields come from running the system.
 Only the ground truth is written by humans.
 That is the expensive part, so spend your expert time there.
 
 **[POINT to the bottom bar]**
+
 Build this set from real questions.
 Then freeze it, so every run is comparable.
 
-**[EXTRA]**
+**[OPTIONAL]**
 Where do real questions come from?
 Support tickets, search logs, emails to HR, questions from new joiners.
-Include easy questions, hard questions, questions with no answer in the documents, and questions with wording that differs from the documents.
+Include easy questions, hard questions, questions with no answer in the documents, and questions whose wording differs from the documents.
 Questions with no answer are especially valuable, because they test whether the system admits it does not know.
 
 **[DEMO: Show one row of the dataset in the notebook.]**
 
+**[SWITCH back to slides]**
+
+Now let us go through the metrics, starting with hallucination.
+
+**[CLICK]**
+
 ---
 
-## SLIDE 30 | Deep dive: Faithfulness
-**[4 min]**
+## SLIDE 30 | Deep dive: Faithfulness  [4 min]
 
 Faithfulness checks for hallucination.
 
@@ -1209,13 +1309,13 @@ The answer makes five claims.
 Four are in the context.
 Faithfulness is point eight.
 
-**[EXTRA: a concrete walk-through]**
+**[OPTIONAL: a concrete walk-through]**
 Question: what is the leave policy for new parents?
 Answer: "Employees get 26 weeks of paid leave. It starts up to two weeks before the due date. Fathers get two weeks. A doctor's note is required. Leave can be extended with approval."
 The judge breaks this into five claims and checks each one against the retrieved text.
 Suppose the context never mentions a doctor's note.
 Then that claim is unsupported, and the score is four out of five.
-Notice that the claim might be true in real life.
+Notice the claim might be true in real life.
 Faithfulness asks only: is it supported by the context we gave the model?
 
 It needs no reference answer.
@@ -1225,20 +1325,24 @@ The limit.
 It depends on the judge model.
 And if the context itself is wrong, faithfulness cannot see that.
 
-**[EXTRA]**
+**[OPTIONAL]**
 A weak judge model can be too lenient or too strict.
 So for important decisions, read a sample of the judge's verdicts yourself.
 
 **[POINT to the bottom bar]**
+
 Low faithfulness with good contexts points to the prompt or the generator.
+
+Faithfulness asks "is it true to the context?" The next metric asks something else.
+
+**[CLICK]**
 
 ---
 
-## SLIDE 31 | Deep dive: Answer Relevance
-**[4 min]**
+## SLIDE 31 | Deep dive: Answer Relevance  [4 min]
 
 Answer Relevance asks a different question.
-Not is it true, but does it fit what was asked.
+Not "is it true", but "does it fit what was asked".
 
 The method is clever.
 An LLM writes questions that the answer would satisfy.
@@ -1247,30 +1351,34 @@ Then we compare them with the original question.
 
 If the generated questions look like the original, the answer is on topic.
 
-**[EXTRA: an example]**
+**[OPTIONAL: an example]**
 Original question: "How many days of casual leave do I get?"
 Answer A: "You get 12 days of casual leave per year."
-Questions an LLM would guess from A: "How many days of casual leave per year?" Very close to the original, so the score is high.
+A question an LLM would guess from A: "How many days of casual leave per year?" Very close to the original, so the score is high.
 Answer B: "Leave must be applied for in the HR portal, and your manager approves it."
-Questions guessed from B: "How do I apply for leave?" Different from the original, so the score is lower.
+A question guessed from B: "How do I apply for leave?" Different from the original, so the score is lower.
 B may be true and useful, but it did not answer what was asked.
 
-It catches off-topic and incomplete answers.
+Answer Relevance catches off-topic and incomplete answers.
 But it does not check truth.
 
 **[POINT to the bottom bar]**
+
 High relevance with low faithfulness means a confident, on-topic, ungrounded answer.
 That is the dangerous combination.
 
-**[EXTRA]**
+**[OPTIONAL]**
 This is the one to worry about most in compliance settings.
 The answer looks perfect: it addresses the question, in fluent language.
 Only the faithfulness score tells you it is not backed by the documents.
 
+Now let us turn to the retriever.
+
+**[CLICK]**
+
 ---
 
-## SLIDE 32 | Deep dive: Context Precision and Recall
-**[5 min]**
+## SLIDE 32 | Deep dive: Context Precision and Recall  [5 min]
 
 These two metrics evaluate the retriever alone.
 
@@ -1278,7 +1386,7 @@ Context Precision.
 Of the chunks we retrieved, are the relevant ones ranked near the top?
 Low precision means noise.
 
-**[EXTRA: example]**
+**[OPTIONAL: example]**
 We retrieve four chunks, in this order: irrelevant, relevant, irrelevant, relevant.
 Both relevant chunks were found, but the first slot, the most important one, is wasted.
 Precision here is lower than for the order relevant, relevant, irrelevant, irrelevant.
@@ -1289,7 +1397,7 @@ Split the reference answer into statements.
 How many of them appear in the retrieved context?
 Low recall means we missed needed information.
 
-**[EXTRA: example]**
+**[OPTIONAL: example]**
 The reference answer has four statements.
 Only three can be found in the retrieved chunks.
 Recall is three out of four, which is point seven five.
@@ -1301,18 +1409,22 @@ Use recall to guide chunking and top-k.
 Both need an LLM judge. Recall also needs a reference answer.
 
 **[POINT to the bottom bar]**
+
 If recall is low, the answer cannot be right.
 Fix retrieval before touching the prompt.
 
-**[EXTRA]**
+**[OPTIONAL]**
 Notice the tension between the two.
 Raising top-k tends to improve recall and lower precision.
 Re-ranking, which reorders the retrieved chunks with a stronger model, is a popular way to get both.
 
+Finally, the headline number.
+
+**[CLICK]**
+
 ---
 
-## SLIDE 33 | Deep dive: Answer Correctness
-**[3 min]**
+## SLIDE 33 | Deep dive: Answer Correctness  [3 min]
 
 Answer Correctness is the headline number.
 
@@ -1320,7 +1432,7 @@ It blends two things.
 Factual overlap between the answer and the reference.
 And semantic similarity between them.
 
-**[EXTRA]**
+**[OPTIONAL]**
 In RAGAS, the factual part works at the level of statements: which statements in the answer are also in the reference, which are extra, and which are missing.
 The semantic part is an embedding similarity between the two texts.
 The two are combined with weights, so correct facts in a different style still score well.
@@ -1333,22 +1445,27 @@ The limits.
 It needs a trusted reference.
 And it hides where the failure happened.
 
-**[EXTRA]**
+**[OPTIONAL]**
 If the reference answer is outdated or wrong, correctness will punish a right answer.
 So review references regularly, especially when policies change.
 
 **[POINT to the bottom bar]**
+
 Use correctness for the headline.
 Then read the other metrics to diagnose.
 
+Now let us put these together and read a real scorecard.
+
+**[CLICK]**
+
 ---
 
-## SLIDE 34 | Reading a scorecard
-**[5 min]**
+## SLIDE 34 | Reading a scorecard  [5 min + 5 min demo]
 
 Let us practise reading a result.
 
-**[Say]** These values are illustrative.
+**[Say]**
+These values are illustrative.
 We will compare them with our real run.
 
 Faithfulness point nine one.
@@ -1366,37 +1483,47 @@ So what is the next step?
 Not the prompt.
 Tune chunking and top-k, then re-score.
 
-**[EXTRA: why this surprises people]**
+**[OPTIONAL: why this surprises people]**
 The natural reaction to a weak system is to rewrite the prompt.
 Here that would waste time.
 The generator is already faithful to what it receives.
 It is simply not receiving enough.
 Reading the scorecard saves you from fixing the wrong thing.
 
-**[EXTRA: a possible experiment to describe]**
-Change chunk size from 800 to 1000 and k from 4 to 6.
+**[OPTIONAL: an experiment to describe]**
+Change chunk size from 800 to 1000, and k from 4 to 6.
 Re-run the same frozen questions.
 If recall goes up to, say, 0.75 and precision drops a little, you have learned the trade-off for your own data.
 Then decide whether the extra noise is acceptable.
 
-**[ASK]** If faithfulness were low and recall were high, where would you look?
+**[ASK]**
+If faithfulness were low and recall were high, where would you look?
+
 **[Expected answer: the prompt or the generator.]**
 
-**[EXTRA: a second quick question]**
+**[OPTIONAL: second quick question]**
 What if all the retrieval and generation scores look fine, but correctness is low?
-**[Expected answer: suspect the reference answers or the source documents, as Slide 38 says.]**
+
+**[Expected answer: suspect the reference answers or the source documents, as we will see on Slide 38.]**
+
+Now let us see the real numbers.
 
 **[DEMO: Run RAGAS on the real data and compare. 5 minutes if time allows.]**
 
-**[EXTRA: during the demo]**
+**[OPTIONAL: during the demo]**
 Sort the results by the lowest score and open the worst two or three questions.
 Show the question, the retrieved chunks, the answer and the ground truth together.
 Averages tell you how you are doing, but individual bad rows tell you what to fix.
 
+**[SWITCH back to slides]**
+
+Once you have scores, how do you decide what is good enough?
+
+**[CLICK]**
+
 ---
 
-## SLIDE 35 | Reading the scores
-**[4 min]**
+## SLIDE 35 | Reading the scores  [4 min]
 
 A simple rule of thumb for score bands.
 
@@ -1410,29 +1537,34 @@ Below point five is failing.
 Find the root cause before release.
 
 **[POINT to the four small cards]**
-And a low score has a typical meaning.
-Low faithfulness, the model adds unsupported claims.
-Low answer relevance, off-topic or incomplete.
-Low context precision, relevant chunks buried in noise.
-Low context recall, needed information never retrieved.
 
-**[Say]** These bands are only a rule of thumb.
+And a low score has a typical meaning.
+Low faithfulness: the model adds unsupported claims.
+Low answer relevance: off-topic or incomplete.
+Low context precision: relevant chunks buried in noise.
+Low context recall: needed information never retrieved.
+
+**[Say]**
+These bands are only a rule of thumb.
 Set real thresholds from the business risk of a wrong answer.
 
-**[EXTRA: how to set a threshold]**
+**[OPTIONAL: how to set a threshold]**
 Ask: what does one wrong answer cost, and how many wrong answers can we live with?
 A casual internal FAQ bot might accept faithfulness around 0.8.
 A compliance assistant may demand 0.95 or higher, plus human review for what falls below.
-Then agree the numbers with the business owner, and write them down before you test, not after.
+Agree the numbers with the business owner, and write them down before you test, not after.
 
-**[EXTRA]**
+**[OPTIONAL]**
 Also remember that with a small question set, one or two questions can move an average a lot.
 Look at the spread, not just the mean.
 
+Now the most useful picture in this section.
+
+**[CLICK]**
+
 ---
 
-## SLIDE 36 | Retrieval and generation fail independently
-**[4 min]**
+## SLIDE 36 | Retrieval and generation fail independently  [4 min]
 
 This grid is the most useful picture in Section 4.
 
@@ -1448,7 +1580,7 @@ Bottom left. Poor retrieval, good-looking generation.
 A fluent answer on weak context.
 Fix chunking, embeddings or top-k.
 
-**[EXTRA]**
+**[OPTIONAL]**
 This box is the sneakiest.
 The answer reads well, so a casual reviewer approves it.
 Only the context scores reveal that the foundation is weak.
@@ -1459,14 +1591,17 @@ Generation cannot recover missing context.
 
 Then re-score the answers.
 
-**[EXTRA]**
+**[OPTIONAL]**
 An easy way to remember the order: fix the input before the output.
 If the model is given the wrong pages, even a perfect writer will produce a poor answer.
 
+Let us now compare the two evaluations we have done today.
+
+**[CLICK]**
+
 ---
 
-## SLIDE 37 | Evaluating standalone LLM versus RAG
-**[4 min]**
+## SLIDE 37 | Evaluating standalone LLM versus RAG  [4 min]
 
 Now compare the two evaluations side by side.
 
@@ -1483,27 +1618,29 @@ For a standalone model, facts cannot be checked without source context.
 For RAG, they are checked against the retrieved context.
 
 And the business question changes.
-From does the copy fit the brief and tone,
-to can staff trust answers from company documents.
+From "does the copy fit the brief and tone?"
+To "can staff trust answers from company documents?"
 
-**[EXTRA]**
+**[OPTIONAL]**
 One more difference.
-In Demonstration one, the references are the only source of truth, so overlap metrics are the main tool.
-In Demonstration two, the retrieved context is also a source of truth, so we can check claims against it without needing a perfect reference.
+In demonstration one, the references are the only source of truth, so overlap metrics are the main tool.
+In demonstration two, the retrieved context is also a source of truth, so we can check claims against it without needing a perfect reference.
 That is a big step forward, because it lets us detect hallucination even when we have no gold answer.
 
-**[EXTRA]**
+**[OPTIONAL]**
 And the metrics can be combined.
 Nothing stops you from using BERTScore on RAG answers, or an LLM judge on marketing copy.
 Choose the tool to fit the question you need answered.
 
+Next, the debugging guide.
+
+**[CLICK]**
+
 ---
 
-## SLIDE 38 | Locating the source of a failure
-**[5 min]**
+## SLIDE 38 | Locating the source of a failure  [5 min]
 
 This table is your debugging guide.
-
 Read the score pattern, then find the likely origin.
 
 Low context recall.
@@ -1524,23 +1661,28 @@ Clarify the task, rewrite the query, add examples.
 Low correctness while other scores are high.
 Suspect the source documents or the reference answers.
 
-**[EXTRA: one quick scenario to practise]**
-Scenario: recall 0.9, precision 0.5, faithfulness 0.9, relevance 0.9.
-Ask the room what to try.
-Expected answer: retrieval finds the right information, but with too much noise, so try re-ranking or a smaller k.
-Then give a second one: recall 0.5, everything else 0.9. Expected: fix chunking, k or embeddings.
+**[OPTIONAL: practice scenarios]**
+Scenario one: recall 0.9, precision 0.5, faithfulness 0.9, relevance 0.9.
+What would you try?
+**[Expected: retrieval finds the right information with too much noise. Try re-ranking or a smaller k.]**
+Scenario two: recall 0.5, everything else 0.9.
+**[Expected: fix chunking, k or embeddings.]**
 
-**[EXTRA]**
+**[OPTIONAL]**
 Metadata filters mean restricting the search by tags, such as department, document type or date.
 For example, only search HR documents for an HR question.
 That removes a whole class of irrelevant chunks.
 
-**[Say]** Take a photo of this slide. You will use it.
+**[Say]**
+Take a photo of this slide. You will use it.
+
+Finally, how do we turn this into a habit?
+
+**[CLICK]**
 
 ---
 
-## SLIDE 39 | Evaluation-driven improvement loop
-**[5 min]**
+## SLIDE 39 | Evaluation-driven improvement loop  [5 min]
 
 Evaluation is not a one-time gate.
 It is a loop.
@@ -1550,25 +1692,29 @@ Diagnose. Locate retrieval or generation faults.
 Change. Adjust the prompt, chunks or retrieval.
 Re-evaluate. Compare with the previous run.
 
-**[EXTRA]**
+**[OPTIONAL]**
 Keep a simple log: date, what changed, scores before and after.
 After a few iterations, that log is the story of how your system improved, and a record you can show stakeholders.
 
 **[POINT to the right box]**
+
 And link scores to business outcomes.
 For compliance risk, set a high faithfulness threshold.
 For support resolution time, track context recall on common tickets.
 For brand risk, add tone review to the rubric.
 
-**[EXTRA]**
+**[OPTIONAL]**
 Evaluation should continue after launch.
 Documents change, users ask new things, and models get updated.
 Sample real questions every week, add the failures to your frozen set, and re-run.
 Scores that were fine in March can drift by September without anyone touching the code.
 
-**[Say]** A score is only useful if someone owns the decision it supports.
+**[Say]**
+A score is only useful if someone owns the decision it supports.
 
-**[Section 4 complete. Move to the conclusion.]**
+That brings us to the close.
+
+**[Section 4 complete. CLICK to the conclusion.]**
 
 ---
 
@@ -1576,8 +1722,7 @@ Scores that were fine in March can drift by September without anyone touching th
 
 ---
 
-## SLIDE 40 | Key takeaways
-**[4 min]**
+## SLIDE 40 | Key takeaways  [4 min]
 
 Let me close with five takeaways.
 
@@ -1596,30 +1741,33 @@ Start from the business goal.
 Five. Evaluation drives improvement.
 Scores guide fixes.
 
-**[EXTRA: tie each takeaway to a moment from today]**
-One: the dashboard analogy.
+**[OPTIONAL: tie each takeaway to a moment from today]**
+One: the car dashboard.
 Two: Output B, the wrong 48 hours that scored high.
 Three: the scorecard where recall was the weak bar and the prompt was fine.
 Four: the same product facts need different thresholds in a sales email and a compliance assistant.
 Five: the loop, with a frozen question set and a log of changes.
 
 **[POINT to the bottom right box]**
+
 The workflow in one line.
 Build, generate, evaluate, diagnose, improve.
 
-**[EXTRA: suggested next steps for the audience]**
+**[OPTIONAL: suggested next steps]**
 Take one real use case from your own work.
 Write down the business goal and the cost of a wrong answer.
 Collect twenty real questions with expert answers.
 Run the pipeline and the scores once, and read the worst three rows.
 That small exercise is worth more than any tool comparison.
 
+One last practical tip.
+
+**[CLICK]**
+
 ---
 
-## SLIDE 41 | Use LLMs as a productivity partner
-**[3 min]**
+## SLIDE 41 | Use LLMs as a productivity partner  [3 min]
 
-One last practical tip.
 Use an LLM as your own learning partner.
 
 For knowledge discovery.
@@ -1631,23 +1779,27 @@ Paste the cell and the full error. Ask for the cause and a fix.
 For tool troubleshooting.
 Share versions and the exact message from LangChain, ChromaDB or Ollama.
 
-**[EXTRA: tips for good prompts]**
+**[OPTIONAL: tips for good prompts]**
 Include your goal, your versions, the exact error text, and what you already tried.
 Ask for an explanation as well as a fix, so you learn why it broke.
 Ask it to quiz you on a metric once you think you understand it.
 
-**[EXTRA: a good irony]**
-Notice that everything we discussed today applies to this advice too.
+**[OPTIONAL: a good irony]**
+Everything we discussed today applies to this advice too.
 An answer from an LLM about your code is fluent and confident, and can still be wrong.
 So evaluate it: run the code, check the documentation, and test the fix.
 
 **[POINT to the bottom bar]**
-But always verify AI-generated code and explanations against official documentation.
+
+Always verify AI-generated code and explanations against official documentation.
+
+Now, over to you.
+
+**[CLICK]**
 
 ---
 
-## SLIDE 42 | Questions and discussion
-**[3 min or more]**
+## SLIDE 42 | Questions and discussion  [3 min or more]
 
 Thank you.
 
@@ -1658,15 +1810,15 @@ Questions on debugging your own setup.
 
 If we run out of time, I will take questions after the session.
 
-**[EXTRA: if the room is quiet, seed with one of these]**
+**[OPTIONAL: if the room is quiet, seed with one of these]**
 How many examples do I need in my evaluation set?
-Answer: start with thirty to fifty good ones, and grow it from real failures.
+Start with thirty to fifty good ones, and grow it from real failures.
 Can I use a small local model as the RAGAS judge?
-Answer: yes, but weaker judges are less reliable, so spot-check their verdicts.
+Yes, but weaker judges are less reliable, so spot-check their verdicts.
 Should I use human review or automated metrics?
-Answer: both. Automated metrics for speed and trends, human review for tone, edge cases and calibration.
+Both. Automated metrics for speed and trends, human review for tone, edge cases and calibration.
 When is RAG not the right choice?
-Answer: when the task does not depend on company knowledge, or the knowledge is small and stable enough to fit directly in the prompt.
+When the task does not depend on company knowledge, or the knowledge is small and stable enough to fit directly in the prompt.
 
 **[Closing line]**
 Remember. Evaluation choices follow the business objective and the application architecture.
@@ -1675,7 +1827,7 @@ Thank you, everyone.
 
 ---
 
-# TRAINER QUICK NOTES
+# TRAINER QUICK NOTES  (do not read aloud)
 
 **Timing checkpoints**
 
@@ -1683,15 +1835,14 @@ Thank you, everyone.
 |---|---|
 | 0:20 | End of Section 1 (Slide 6) |
 | 1:15 | End of Section 2 (Slide 18) |
-| 1:55 | End of Section 3, start break (Slide 26) |
+| 1:55 | End of Section 3, start of break (Slide 26) |
 | 2:05 | Back from break, Section 4 starts (Slide 27) |
 | 2:55 | End of Section 4 (Slide 39) |
 | 3:00 | Wrap-up and Q and A |
 
-**About the extra material**
+**About the OPTIONAL blocks**
 
-The EXTRA blocks add roughly 15 to 20 minutes if you read all of them.
-Plan to use about half. Suggested priority, highest first:
+They add roughly 15 to 20 minutes if you read all of them. Plan to use about half. Suggested priority, highest first:
 
 1. Slide 15 example texts (A, B, C) and the follow-up question.
 2. Slide 19 failure-per-box list.
@@ -1702,10 +1853,10 @@ Plan to use about half. Suggested priority, highest first:
 
 **If you are running late, shorten these first**
 
-1. Slides 12 and 13. Mention ROUGE and METEOR in one sentence each, and skip their EXTRA blocks.
+1. Slides 12 and 13. One sentence each, skip the optional blocks.
 2. Slide 25. Skip it.
 3. Slide 37. Merge with Slide 36.
-4. All EXTRA blocks on Slides 1 to 3, 9 and 20.
+4. All optional blocks on Slides 1 to 3, 9 and 20.
 
 **If you are running early, extend these**
 
